@@ -19,10 +19,10 @@ We prioritize inclusive design and provide features for:
 - Hearing impaired
 
 ## Tech Stack
-- Frontend: React.js  
-- Backend: Node.js / Python  
-- AI/ML: TensorFlow / OpenAI API  
-- Database: PostgreSQL
+- Frontend: [e.g., React.js]  
+- Backend: [e.g., Node.js, Python]  
+- AI/ML: [e.g., TensorFlow, OpenAI API]  
+- Database: [e.g., PostgreSQL]
 
 ## Architecture
 High-level architecture diagram & description (link or image in assets/diagrams)
@@ -43,4 +43,4 @@ High-level architecture diagram & description (link or image in assets/diagrams)
 - Omar Issa – Pitch / Demo / Workflow
 
 ## Hackathon Context
-Project developed for Gemini 3 Hackathon, aiming to solve accessibility challenges in public transport.
+Project developed for [Gemini 3 Hackathon], aiming to solve accessibility challenges in public transport.
