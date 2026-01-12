@@ -37,6 +37,7 @@ High-level architecture diagram & description (link or image in assets/diagrams)
 - Kimbi Denis – GitHub Content Lead / Documentation  
 - Seif Harraz – UI/UX  
 - Zakaria Kharroub – Full Stack / GitHub Workflow  
+- Shlok Bajaj – Full Stack / Research
 - Chanchal Sahu – AI / Backend  
 - Sohail Koutari – Backend / GitHub  
 - Anish Vennala – Product / AI / Research  
