@@ -1,34 +1,63 @@
 # backend/main.py
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from services.climate_service import ClimateEngine  # Importing your class
+# FastAPI Application Entry Point for Transit Accessibility App
 
-app = FastAPI(title="Inclusive Transit API")
+# Purpose: Provides REST API endpoints for:
+#   - Route planning with accessibility considerations
+#   - Eco-friendly transit impact tracking
+#   - Accessibility alerts and information
+#   - User engagement through gamification (points/badges)
 
-# Initialize your engine
-climate_engine = ClimateEngine()
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-
-# 1. Define the Input Format (Data Validation)
-class TripRequest(BaseModel):
-    distance_km: float
-    mode: str  # "bus", "walk", "car", "subway"
-
-
-# 2. Define the Route
-@app.post("/api/calculate-impact")
-async def calculate_impact(trip: TripRequest):
-    """
-    Frontend sends: {"distance_km": 5.0, "mode": "bus"}
-    Backend returns: JSON with points and CO2 saved
-    """
-    if trip.distance_km < 0:
-        raise HTTPException(status_code=400, detail="Distance cannot be negative")
-
-    result = climate_engine.calculate_savings(trip.distance_km, trip.mode)
-    return result
+# Import routers from route modules
+from routes import health, climate, accessibility, routing, users
 
 
-@app.get("/")
-def home():
-    return {"message": "Transit API is running! 🚀"}
+# FastAPI Application Initialization
+
+app = FastAPI(
+    title="Inclusive Transit API",
+    description="Accessibility-first transit API supporting wheelchair users, visually impaired, and hearing impaired individuals",
+    version="1.0.0"
+)
+
+# Configure CORS for frontend communication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # TODO: Restrict to frontend domain in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Register Routers
+
+# Health check endpoints
+app.include_router(health.router)
+
+# Climate impact and gamification endpoints
+app.include_router(climate.router)
+
+# Accessibility information endpoints
+app.include_router(accessibility.router)
+
+# Route planning endpoints
+app.include_router(routing.router)
+
+# User engagement endpoints
+app.include_router(users.router)
+
+# Main Entry Point
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Run the application with: uvicorn main:app --reload
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
