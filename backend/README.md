@@ -1,3 +1,4 @@
+chore/backend-structure
 # Transit Accessibility App - Backend API
 
 FastAPI-based REST API providing accessibility-first transit planning, climate impact tracking, and user engagement features.
@@ -140,21 +141,6 @@ Retrieve user's eco-friendly transit engagement statistics including CO2 saved, 
 ## Running the API
 
 ### Development Mode
-
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-API will be available at `http://localhost:8000`
-
-### Interactive API Documentation
-
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
----
-
 ## Development Guidelines
 
 ### Adding New Endpoints
@@ -182,6 +168,18 @@ API will be available at `http://localhost:8000`
 
 ---
 
+## API Routes
+
+- `GET /` → API status
+- `GET /health` → Health check
+- `POST /api/calculate-impact` → CO₂ savings & points
+- `GET /api/station/{station_id}/accessibility`
+- `GET /api/alerts`
+- `POST /api/route/plan`
+- `GET /api/user/{user_id}/stats`
+
+---
+
 ## TODO
 
 - [ ] Replace mock data with database integration
@@ -191,3 +189,5 @@ API will be available at `http://localhost:8000`
 - [ ] Add rate limiting and API key management
 - [ ] Set up logging and monitoring
 - [ ] Add comprehensive test coverage
+
+_Last updated backend documentation structure._
