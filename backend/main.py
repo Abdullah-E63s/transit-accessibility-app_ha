@@ -7,11 +7,25 @@
 #   - Accessibility alerts and information
 #   - User engagement through gamification (points/badges)
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv is optional
+
 # Import routers from route modules
 from routes import health, climate, accessibility, routing, users
+
+# Import services for controller logic
+from services.chat_service import ChatService
+from services.transit_service import TransitService
+from services.vision_service import VisionService
+from services.climate_service import ClimateEngine
 
 
 # FastAPI Application Initialization
@@ -21,6 +35,12 @@ app = FastAPI(
     description="Accessibility-first transit API supporting wheelchair users, visually impaired, and hearing impaired individuals",
     version="1.0.0"
 )
+
+# Initialize service instances (available globally for controller logic)
+chat_service = ChatService()
+transit_service = TransitService()
+vision_service = VisionService()
+climate_engine = ClimateEngine()
 
 # Configure CORS for frontend communication
 app.add_middleware(
