@@ -29,6 +29,18 @@ class StationAccessibilityInfo(BaseModel):
     elevators_working: bool
     accessible_restrooms: bool
 
+class AccessibilityNeedsRequest(BaseModel):
+    """User input for accessibility needs."""
+    text: str = Field(..., min_length=1)
+
+
+class AccessibilityNeeds(BaseModel):
+    """Structure for accessibility needs."""
+    needs_step_free: bool
+    max_transfers: Optional[int] = None
+    avoid_long_walks: bool
+    needs_audio: bool
+    needs_visual: bool
 
 # Routes
 
@@ -120,3 +132,37 @@ async def get_accessibility_alerts(
         mock_alerts = [a for a in mock_alerts if a["station_id"] == station_id]
     
     return {"alerts": mock_alerts, "total_alerts": len(mock_alerts)}
+
+@router.post("/accessibility/needs", response_model=AccessibilityNeeds)
+async def interpret_accessibility_needs(req: AccessibilityNeedsRequest):
+    """
+    Convert a user's accessibility needs into flags.
+    Mock logic for MVP; can be replaced with Gemini later.
+    """
+    t = req.text.lower()
+
+    needs_step_free = any(k in t for k in [
+        "wheelchair", "no stairs", "avoid stairs", "step-free", "step free", "elevator"
+    ])
+
+    avoid_long_walks = any(k in t for k in [
+        "avoid walking", "long walk", "can't walk far", "cannot walk far", "short walk only"
+    ])
+
+    needs_audio = any(k in t for k in [
+        "audio", "blind", "visually impaired", "screen reader"
+    ])
+
+    needs_visual = any(k in t for k in [
+        "visual", "deaf", "hearing impaired", "captions"
+    ])
+
+    max_transfers = 1 if ("few transfers" in t or "minimal transfers" in t or "less transfers" in t) else None
+
+    return {
+        "needs_step_free": needs_step_free,
+        "max_transfers": max_transfers,
+        "avoid_long_walks": avoid_long_walks,
+        "needs_audio": needs_audio,
+        "needs_visual": needs_visual
+    }
