@@ -33,15 +33,5 @@ High-level architecture diagram & description (link or image in assets/diagrams)
 3. Start frontend and backend servers
 4. See docs/ for detailed setup instructions
 
-## Team
-- Kimbi Denis – GitHub Content Lead / Documentation  
-- Seif Harraz – UI/UX  
-- Zakaria Kharroub – Full Stack / GitHub Workflow  
-- Shlok Bajaj – Full Stack / Research
-- Chanchal Sahu – AI / Backend  
-- Sohail Koutari – Backend / GitHub  
-- Anish Vennala – Product / AI / Research  
-- Omar Issa – Pitch / Demo / Workflow / Project Lead
-
 ## Hackathon Context
 Project developed for [Gemini 3 Hackathon], aiming to solve accessibility challenges in public transport.
