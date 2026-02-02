@@ -1,7 +1,16 @@
 import React from 'react';
 import { Search, Mic } from 'lucide-react';
 
-const SearchBar = ({ onChange }) => {
+/**
+ * SearchBar Component
+ * 
+ * A controlled search input component with search and voice icons.
+ * 
+ * Props:
+ * @param {string} value - Current search value (controlled)
+ * @param {function} onChange - Callback when search text changes
+ */
+const SearchBar = ({ value = '', onChange }) => {
     return (
         <div className="search-bar-container">
             <div className="search-bar">
@@ -13,6 +22,7 @@ const SearchBar = ({ onChange }) => {
                     type="text"
                     className="search-input"
                     placeholder="Where do you want to go?"
+                    value={value}
                     onChange={(e) => onChange && onChange(e.target.value)}
                 />
                 <Mic

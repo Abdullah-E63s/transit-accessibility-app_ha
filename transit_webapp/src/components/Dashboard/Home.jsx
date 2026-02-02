@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import WeatherCard from './WeatherCard';
 import CO2Card from './CO2Card';
 import SearchBar from './SearchBar';
-import { MapPin, ArrowRight, Menu, Bus, Train, TrainFront, ChevronDown, Star } from 'lucide-react';
+import { MapPin, Bus, Train, TrainFront, ChevronDown, Star, X, ArrowLeft } from 'lucide-react';
 import RouteCard from '../Transit/RouteCard';
+import TransitMap from '../Map/TransitMap';
 
 const Home = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +24,8 @@ const Home = () => {
             co2: '320g',
             co2Label: 'Save CO₂',
             badge: { type: 'good', text: 'Good' },
-            tags: ['Accessible']
+            tags: ['Accessible'],
+            coordinates: [3.145, 101.690]
         },
         {
             id: 2,
@@ -39,7 +41,8 @@ const Home = () => {
             badge: { type: 'moderate', text: 'Moderate' },
             tags: ['Accessible'],
             isRisk: true,
-            riskText: 'Risky Area (Bad Pollution)'
+            riskText: 'Risky Area (Bad Pollution)',
+            coordinates: [3.140, 101.695]
         },
         {
             id: 3,
@@ -53,7 +56,8 @@ const Home = () => {
             co2: '150g',
             co2Label: 'Save CO₂',
             badge: { type: 'good', text: 'Fast' },
-            tags: ['Accessible']
+            tags: ['Accessible'],
+            coordinates: [3.135, 101.680]
         }
     ];
 
@@ -64,42 +68,95 @@ const Home = () => {
             {/* Conditional Header/UI based on search state */}
             {!searchQuery ? (
                 <>
-                    {/* Standard Home Header */}
-                    <div className="home-header">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div className="menu-btn-mobile" style={{ display: 'none' }}>
-                                <Menu size={24} color="#343A40" />
-                            </div>
-                            <div className="home-greeting">
-                                <div style={{ fontSize: '14px', color: '#6C757D' }}>Welcome Back!</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <MapPin size={16} color="#D32F2F" fill="#D32F2F" />
-                                    <h2 style={{ margin: 0 }}>Kuala Lumpur, Malaysia</h2>
+                    <>
+                        {/* Main Content Section */}
+                        <div className="home-content" style={{ paddingTop: '24px', paddingBottom: '100px' }}>
+
+                            {/* Greeting Header */}
+                            <div className="home-header" style={{ padding: '0 0 16px 0', background: 'transparent' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div className="home-greeting">
+                                        <div style={{ fontSize: '14px', color: '#6C757D' }}>Welcome Back!</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <MapPin size={16} color="#D32F2F" fill="#D32F2F" />
+                                            <h2 style={{ margin: 0, fontSize: '18px' }}>Kuala Lumpur</h2>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="home-icons">
-                            <div className="icon-btn"><ArrowRight size={20} /></div>
-                        </div>
-                    </div>
 
-                    <div className="home-content">
-                        <div className="home-grid">
-                            <WeatherCard />
-                            <CO2Card />
+                            {/* Weather and CO2 Cards */}
+                            <div className="home-grid">
+                                <WeatherCard />
+                                <CO2Card />
+                            </div>
+
+                            {/* Map Section */}
+                            <div style={{ marginTop: '24px' }}>
+                                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#343A40' }}>
+                                    Nearby Transit Stations
+                                </h3>
+                                <div style={{ height: '300px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}>
+                                    <TransitMap
+                                        center={[3.1390, 101.6869]}
+                                        zoom={13}
+                                        style={{ height: '100%', width: '100%' }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Search Bar Section - Below Map */}
+                            <div className="search-section" style={{ marginTop: '24px' }}>
+                                <SearchBar value={searchQuery} onChange={(val) => setSearchQuery(val)} />
+                            </div>
                         </div>
-                        <div className="search-section" style={{ marginTop: '24px' }}>
-                            <SearchBar onChange={(val) => setSearchQuery(val)} />
-                        </div>
-                    </div>
+                    </>
                 </>
             ) : (
                 <>
                     {/* Search Visual View (Map background at top) */}
                     <div className="search-visual-header">
-                        <div className="search-map-placeholder">
-                            {/* Map background via CSS */}
-                            <div className="search-pill-overlay">
+                        <div className="search-map-placeholder" style={{ position: 'relative' }}>
+                            {/* Interactive Map Component */}
+                            <TransitMap
+                                markers={filteredRoutes.map(r => ({
+                                    position: r.coordinates || [3.1390, 101.6869],
+                                    popup: `${r.type.toUpperCase()}: ${r.station} (${r.duration})`
+                                }))}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
+                            />
+
+                            {/* Back Button - Top Left */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '20px',
+                                left: '20px',
+                                zIndex: 1200
+                            }}>
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        backgroundColor: 'white',
+                                        border: 'none',
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                    <ArrowLeft size={20} color="#343A40" />
+                                </button>
+                            </div>
+
+                            {/* Search Overlay - High z-index to sit above map */}
+                            <div className="search-pill-overlay" style={{ zIndex: 1100 }}>
                                 <SearchBar value={searchQuery} onChange={(val) => setSearchQuery(val)} />
                             </div>
                         </div>
