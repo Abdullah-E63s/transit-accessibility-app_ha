@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import WeatherCard from './WeatherCard';
 import CO2Card from './CO2Card';
 import SearchBar from './SearchBar';
-import { MapPin, Bus, Train, TrainFront, ChevronDown, Star, X, ArrowLeft } from 'lucide-react';
+import { MapPin, Bus, Train, TrainFront, ChevronDown, Star } from 'lucide-react';
 import RouteCard from '../Transit/RouteCard';
 import TransitMap from '../Map/TransitMap';
 
@@ -126,39 +126,6 @@ const Home = () => {
                                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
                             />
 
-                            {/* Back Button - Top Left */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '20px',
-                                left: '20px',
-                                zIndex: 1200
-                            }}>
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        backgroundColor: 'white',
-                                        border: 'none',
-                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                >
-                                    <ArrowLeft size={20} color="#343A40" />
-                                </button>
-                            </div>
-
-                            {/* Search Overlay - High z-index to sit above map */}
-                            <div className="search-pill-overlay" style={{ zIndex: 1100 }}>
-                                <SearchBar value={searchQuery} onChange={(val) => setSearchQuery(val)} />
-                            </div>
                         </div>
                     </div>
 
@@ -166,6 +133,11 @@ const Home = () => {
                         <div className="sheet-handle"></div>
 
                         <div className="results-panel-content">
+                            {/* Search Bar inside Results Panel */}
+                            <div style={{ marginBottom: '20px' }}>
+                                <SearchBar value={searchQuery} onChange={(val) => setSearchQuery(val)} autoFocus={true} />
+                            </div>
+
                             <div className="results-header-row">
                                 <h3 className="section-title-white">Suggested Routes</h3>
                                 <span className="cancel-search-btn" onClick={() => setSearchQuery('')}>Cancel</span>

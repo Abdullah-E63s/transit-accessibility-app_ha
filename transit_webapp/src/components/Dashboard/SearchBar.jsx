@@ -1,21 +1,22 @@
-import React from 'react';
-import { Search, Mic } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 
 /**
  * SearchBar Component
  * 
- * A controlled search input component with search and voice icons.
+ * A controlled search input component with location and search icons.
  * 
  * Props:
  * @param {string} value - Current search value (controlled)
+ * @param {string} value - Current search value (controlled)
  * @param {function} onChange - Callback when search text changes
+ * @param {boolean} autoFocus - Whether to focus input on mount
  */
-const SearchBar = ({ value = '', onChange }) => {
+const SearchBar = ({ value = '', onChange, autoFocus = false }) => {
     return (
         <div className="search-bar-container">
-            <div className="search-bar">
-                <Search
-                    color="#4A90E2"
+            <div className="search-bar" style={{ borderRadius: '100px', padding: '12px 20px' }}>
+                <MapPin
+                    color="#343A40"
                     size={20}
                 />
                 <input
@@ -24,9 +25,11 @@ const SearchBar = ({ value = '', onChange }) => {
                     placeholder="Where do you want to go?"
                     value={value}
                     onChange={(e) => onChange && onChange(e.target.value)}
+                    style={{ fontWeight: '500' }}
+                    autoFocus={autoFocus}
                 />
-                <Mic
-                    color="#D32F2F"
+                <Search
+                    color="#343A40"
                     size={20}
                     style={{ cursor: 'pointer' }}
                 />

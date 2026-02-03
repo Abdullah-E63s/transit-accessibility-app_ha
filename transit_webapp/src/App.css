@@ -708,16 +708,7 @@ body {
   position: relative;
 }
 
-.search-pill-overlay {
-  position: absolute;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 400px;
-  z-index: 30;
-  animation: fadeInDown 0.3s ease-out 0.1s both;
-}
+
 
 .home-search-results-fixed {
   flex: 1;
@@ -741,6 +732,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -751,6 +743,7 @@ body {
     transform: translateY(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -762,6 +755,7 @@ body {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -773,6 +767,7 @@ body {
     opacity: 0;
     transform: translate(-50%, -10px);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0);
