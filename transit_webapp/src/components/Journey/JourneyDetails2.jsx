@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Bell, X, ChevronDown, Plus, Minus, Leaf } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const JourneyDetails = () => {
+const JourneyDetails2 = () => {
     const navigate = useNavigate();
     const [departureTime, setDepartureTime] = useState('8:00 PM');
     const [minuteAdjustment, setMinuteAdjustment] = useState(15);
@@ -57,20 +57,20 @@ const JourneyDetails = () => {
                 top: '72px',
                 left: '16px',
                 right: '16px',
-                backgroundColor: '#CDFF87',
+                backgroundColor: '#FF8957',
                 borderRadius: '12px',
                 padding: '14px 18px',
                 zIndex: 5,
                 boxShadow: '1px 13px 10px rgba(0, 0, 0, 0.15)'
             }}>
                 <div style={{ fontSize: '16px', fontWeight: '800', color: '#000000', marginBottom: '4px' }}>
-                    This route produces 38% less emissions
+                    Air quality is unhealthy for sensitive 
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: '800', color: '#000000', marginBottom: '4px' }}>
-                    and avoids poor air quality.
+                    groups. Not recommended for Asthma
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: '800', color: '#000000' }}>
-                    You save 320g CO₂ using this route
+                    patients.
                 </div>
             </div>
 
@@ -131,7 +131,7 @@ const JourneyDetails = () => {
                         fontWeight: '700',
                         color: '#054777'
                     }}>
-                        $ 1.80
+                        $ 1.50
                     </div>
                 </div>
 
@@ -167,14 +167,14 @@ const JourneyDetails = () => {
                         <span>320g CO₂</span>
                     </div>
                     <div style={{
-                        backgroundColor: '#00C853',
+                        backgroundColor: '#ffb223',
                         padding: '6px 12px',
                         borderRadius: '16px',
                         fontSize: '12px',
                         fontWeight: '700',
                         color: '#000000'
                     }}>
-                        Good
+                        Moderate
                     </div>
                 </div>
 
@@ -260,7 +260,7 @@ const JourneyDetails = () => {
                         </div>
                         <div style={{ flex: 1, paddingTop: '8px' }}>
                             <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
-                                Walk to Shola Market
+                                Walk to Bazuka Market
                             </div>
                             <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
                                 8:00 PM
@@ -288,7 +288,7 @@ const JourneyDetails = () => {
                         </div>
                         <div style={{ flex: 1, paddingTop: '8px' }}>
                             <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
-                                Board Bus Route: Shola → Meskel
+                                Board Bus Route: Bazuka → Meskel
                             </div>
                             <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
                                 8:05 PM
@@ -348,4 +348,4 @@ const JourneyDetails = () => {
     );
 };
 
-export default JourneyDetails;
+export default JourneyDetails2;
