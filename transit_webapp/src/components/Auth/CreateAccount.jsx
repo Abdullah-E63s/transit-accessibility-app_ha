@@ -29,15 +29,16 @@ const CreateAccount = ({ onRegister }) => {
     };
 
     return (
-        <div className="screen">
+        <div className="screen" style={{ overflow: 'hidden', height: '100vh' }}>
             <div className="auth-container">
-                <div className="auth-header">
-                    <h1>Create Account</h1>
-                    <p>Sign up to get started</p>
+                <div className="auth-header" style={{ marginBottom: '20px' }}>
+                    <img src="/logo.jpg" alt="TransitEase Logo" className="login-brand-logo" />
+                    <h1 style={{ margin: '8px 0 4px 0' }}>Create Account</h1>
+                    <p style={{ margin: '0 0 16px 0' }}>Sign up to get started</p>
                 </div>
 
                 <form className="auth-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
                         <label htmlFor="email">Email Address</label>
                         <input
                             type="email"
@@ -50,7 +51,7 @@ const CreateAccount = ({ onRegister }) => {
                         />
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
                         <label htmlFor="mobile">Mobile Number</label>
                         <input
                             type="tel"
@@ -63,7 +64,7 @@ const CreateAccount = ({ onRegister }) => {
                         />
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
                         <label htmlFor="password">Password</label>
                         <input
                             type="password"
@@ -76,27 +77,27 @@ const CreateAccount = ({ onRegister }) => {
                         />
                     </div>
 
-                    <div className="biometric-section">
-                        <p style={{ marginBottom: '16px', fontWeight: '600', color: '#002B49' }}>
+                    <div className="biometric-section" style={{ marginTop: '-10px', marginBottom: '10px' }}>
+                        <p style={{ marginBottom: '12px', fontWeight: '600', color: '#002B49', fontSize: '14px' }}>
                             Scan to Register Biometrics
                         </p>
                         <div className="biometric-icons">
                             <div className="biometric-icon">
-                                <ScanFace size={32} color="#002B49" />
+                                <ScanFace size={28} color="#002B49" />
                             </div>
                             <div className="biometric-icon">
-                                <Fingerprint size={32} color="#002B49" />
+                                <Fingerprint size={28} color="#002B49" />
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-primary">
+                    <button type="submit" className="btn btn-primary" style={{ marginTop: '0px', marginBottom: '16px' }}>
                         Create Account
                     </button>
                 </form>
 
-                <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '14px', color: '#6C757D' }}>
+                <div style={{ marginTop: '-5px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '14px', color: '#6C757D', margin: 0 }}>
                         Already have an account? <span
                             onClick={() => navigate('/login')}
                             style={{ color: '#002B49', fontWeight: '700', cursor: 'pointer' }}

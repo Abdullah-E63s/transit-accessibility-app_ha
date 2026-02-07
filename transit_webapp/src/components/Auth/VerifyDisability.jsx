@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Mic, EyeOff, Ear } from 'lucide-react';
+import { X, Mic, EyeOff, Ear, MessageSquareOff, EarOff } from 'lucide-react';
 
 const VerifyDisability = ({ isOpen, onClose }) => {
     const [step, setStep] = React.useState('VERIFY'); // VERIFY, SARA_INTRO, USER_SPEAKING, SARA_DESTINATION
@@ -90,12 +90,12 @@ const VerifyDisability = ({ isOpen, onClose }) => {
                                 </div>
                                 <div className="disability-option-btn-container" onClick={handleDisabilitySelect}>
                                     <button className="disability-circle-btn speech">
-                                        <span style={{ fontSize: '24px' }}>👄</span>
+                                        <MessageSquareOff size={28} color="black" />
                                     </button>
                                 </div>
                                 <div className="disability-option-btn-container" onClick={handleDisabilitySelect}>
                                     <button className="disability-circle-btn hearing">
-                                        <Ear size={28} color="black" />
+                                        <EarOff size={28} color="black" />
                                     </button>
                                 </div>
                             </div>
