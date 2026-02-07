@@ -9,6 +9,7 @@ import OSRMMap from '../Map/OSRMMap';
 
 const Home = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [homeSearchQuery, setHomeSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('bus');
     const [activeFilters, setActiveFilters] = useState(['accessible']);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -255,6 +256,13 @@ const Home = () => {
                             color="#000000"
                             size={20}
                             style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                                if (searchQuery.trim()) {
+                                    navigate('/searchroute', { 
+                                        state: { searchQuery: searchQuery.trim() } 
+                                    });
+                                }
+                            }}
                         />
                         </div>
                     </div> 
@@ -377,9 +385,13 @@ const Home = () => {
                                 type="text"
                                 className="search-input"
                                 placeholder="Where do you want to go?"
-                                onChange={(e) => {
-                                    if (e.target.value.length > 0) {
-                                        navigate('/searchroute');
+                                value={homeSearchQuery}
+                                onChange={(e) => setHomeSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && homeSearchQuery.trim()) {
+                                        navigate('/searchroute', { 
+                                            state: { searchQuery: homeSearchQuery.trim() } 
+                                        });
                                     }
                                 }}
                                 style={{ fontWeight: '600', color: '#000000' }}
@@ -388,6 +400,13 @@ const Home = () => {
                                 color="#000000"
                                 size={20}
                                 style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                    if (homeSearchQuery.trim()) {
+                                        navigate('/searchroute', { 
+                                            state: { searchQuery: homeSearchQuery.trim() } 
+                                        });
+                                    }
+                                }}
                             />
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Bell, ArrowUp, Search, X, Train } from 'lucide-react';
+import { ArrowLeft, Bell, ArrowUp, Search, X, Train, Bus, TrainFront } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import OSRMMap from '../Map/OSRMMap';
 
@@ -8,9 +8,23 @@ const ActiveTrip = () => {
     const [isActive, setIsActive] = useState(true);
     const [drawerPosition, setDrawerPosition] = useState(85);
     const [isDragging, setIsDragging] = useState(false);
+    const [activeTripRoute, setActiveTripRoute] = useState(null);
     const drawerRef = useRef(null);
     const startYRef = useRef(0);
     const startPosRef = useRef(0);
+
+    // Load active trip route data from localStorage
+    useEffect(() => {
+        const storedRoute = localStorage.getItem('activeTripRoute');
+        if (storedRoute) {
+            try {
+                const routeData = JSON.parse(storedRoute);
+                setActiveTripRoute(routeData);
+            } catch (error) {
+                console.error('Error parsing stored route:', error);
+            }
+        }
+    }, []);
 
     const handleDragStart = (e) => {
         setIsDragging(true);
@@ -84,7 +98,7 @@ const ActiveTrip = () => {
                         {
                             lat: 3.1570,
                             lon: 101.7120,
-                            popup: "Meskel Square Station"
+                            popup: activeTripRoute?.station || "Meskel Square Station"
                         }
                     ]}
                     routes={[
@@ -97,7 +111,8 @@ const ActiveTrip = () => {
                                     [101.6869, 3.1390],  // Start: Kuala Lumpur (lng, lat)
                                     [101.6950, 3.1450],  // Intermediate point
                                     [101.7000, 3.1520],  // Intermediate point  
-                                    [101.7120, 3.1570]   // End: Meskel Square Station (lng, lat)
+                                    [101.7120, 3.1570]   // End: 
+                                    //  Square Station (lng, lat)
                                 ]
                             }
                         }
@@ -143,7 +158,7 @@ const ActiveTrip = () => {
             }}>
                 <ArrowUp size={24} color="#FFFFFF" />
                 <div style={{ fontSize: '20px', fontWeight: '700', color: '#FFFFFF' }}>
-                    Take bus at Shloka Market
+                    Take Bus to Shola Market
                 </div>
             </div>
 
@@ -215,8 +230,10 @@ const ActiveTrip = () => {
                     </button>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Train size={28} color="#FFFFFF" />
-                            23 Min
+                            {activeTripRoute?.type === 'train' ? <Train size={28} color="#FFFFFF" /> :
+                             activeTripRoute?.type === 'mrt' ? <TrainFront size={28} color="#FFFFFF" /> :
+                             <Bus size={28} color="#FFFFFF" />}
+                            {activeTripRoute?.duration || '23 Min'}
                         </div>
                         <div style={{ fontSize: '14px', color: '#FFFFFF', opacity: 0.9, textAlign: 'center' }}>
                             5.1 km | 8:15 PM
@@ -393,7 +410,7 @@ const ActiveTrip = () => {
                                     Chevrolet Hospital
                                 </div>
                                 <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '10px' }}>
-                                    Meskel Square Station
+                                    {activeTripRoute?.station || 'Meskel Square Station'}
                                 </div>
                             </div>
                         </div>

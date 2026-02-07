@@ -3,11 +3,17 @@ import WeatherCard from './WeatherCard';
 import CO2Card from './CO2Card';
 import { ArrowLeft, Bell, MapPin, ArrowRight, Menu, Bus, Train, TrainFront, ChevronDown, Star, MenuIcon, Mic, Search, LocateFixed } from 'lucide-react';
 import RouteCard from '../Transit/RouteCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import OSRMMap from '../Map/OSRMMap';
 
 const SearchRoute = () => {
-    const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Get search query from navigation state
+    const initialSearchQuery = location.state?.searchQuery || '';
+    
+    const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
     const [activeTab, setActiveTab] = useState('bus');
     const [activeFilters, setActiveFilters] = useState(['accessible']);
     const [drawerPosition, setDrawerPosition] = useState(65);
@@ -16,6 +22,9 @@ const SearchRoute = () => {
     const [selectedDepartOption, setSelectedDepartOption] = useState('Depart Now');
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
     const [showRecommendation, setShowRecommendation] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [selectedStation, setSelectedStation] = useState(null);
     const drawerRef = useRef(null);
     const startYRef = useRef(0);
     const startPosRef = useRef(0);
@@ -23,12 +32,13 @@ const SearchRoute = () => {
     const departButtonRef = useRef(null);
     const dropdownMenuRef = useRef(null);
 
-    const routes = [
+    // Base route templates - station names will be updated based on search
+    const baseRoutes = [
         {
             id: 1,
             type: 'bus',
             recommended: true,
-            station: 'Meskel Square Station',
+            station: 'Bus Station',
             distance: '6.5 km',
             duration: '25 mins',
             arrivalTime: '8:50 pm',
@@ -42,7 +52,7 @@ const SearchRoute = () => {
             id: 2,
             type: 'bus',
             recommended: false,
-            station: 'Meskel Square Station',
+            station: 'Bus Station',
             distance: '5.0 km',
             duration: '40 mins',
             arrivalTime: '8:30 pm',
@@ -58,7 +68,7 @@ const SearchRoute = () => {
             id: 3,
             type: 'train',
             recommended: true,
-            station: 'Meskel Square Train Station',
+            station: 'Train Station',
             distance: '3.2 km',
             duration: '15 mins',
             arrivalTime: '8:45 pm',
@@ -72,7 +82,7 @@ const SearchRoute = () => {
             id: 4,
             type: 'mrt',
             recommended: true,
-            station: 'Meskel Square MRT Station',
+            station: 'MRT Station',
             distance: '2.2 km',
             duration: '10 mins',
             arrivalTime: '8:35 pm',
@@ -86,7 +96,7 @@ const SearchRoute = () => {
             id: 5,
             type: 'mrt',
             recommended: false,
-            station: 'Meskel Square MRT Station',
+            station: 'LRT Station',
             distance: '2.2 km',
             duration: '10 mins',
             arrivalTime: '8:35 pm',
@@ -100,10 +110,69 @@ const SearchRoute = () => {
         }
     ];
 
+    // Function to search for places using backend API
+    const searchPlaces = async (query) => {
+        if (!query || query.length < 2) {
+            setSearchResults([]);
+            return;
+        }
 
+        setIsSearching(true);
+        try {
+            console.log('Searching for:', query);
+            const response = await fetch(`http://localhost:8000/api/maps/geocode?q=${encodeURIComponent(query)}&limit=5`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Search results:', data);
+            
+            if (data.results && Array.isArray(data.results)) {
+                setSearchResults(data.results);
+            } else {
+                console.warn('No results found or invalid response format');
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error('Error searching places:', error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    // Function to create routes based on search results
+    const createRoutesFromSearch = (searchQuery) => {
+        try {
+            if (!searchQuery || searchQuery.trim() === '') {
+                return baseRoutes.map(route => ({
+                    ...route,
+                    station: `${route.station.includes('MRT') ? 'MRT' : route.station.includes('LRT') ? 'LRT' : route.station.includes('Train') ? 'Train' : 'Bus'} Station`
+                }));
+            }
+
+            // Clean the search query
+            const cleanQuery = searchQuery.trim();
+            console.log('Creating routes for query:', cleanQuery);
+            
+            return baseRoutes.map(route => ({
+                ...route,
+                station: route.type === 'bus' ? `${cleanQuery} Bus Station` :
+                        route.type === 'train' ? `${cleanQuery} Train Station` :
+                        route.type === 'mrt' ? (route.id === 5 ? `${cleanQuery} LRT Station` : `${cleanQuery} MRT Station`) :
+                        `${cleanQuery} Station`
+            }));
+        } catch (error) {
+            console.error('Error creating routes from search:', error);
+            return baseRoutes; // Fallback to base routes
+        }
+    };
+
+    const routes = createRoutesFromSearch(searchQuery);
 
     const filteredRoutes = routes.filter(r => r.type === activeTab);
-    const navigate = useNavigate();
 
     // Show recommendation when routes are available
     useEffect(() => {
@@ -111,6 +180,15 @@ const SearchRoute = () => {
             setShowRecommendation(true);
         }
     }, [filteredRoutes]);
+
+    // Search for places when query changes
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            searchPlaces(searchQuery);
+        }, 300); // Debounce search
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
 
     // Show recommendation when routes are available
     useEffect(() => {
@@ -398,6 +476,7 @@ const SearchRoute = () => {
                                 type="text"
                                 className="search-input"
                                 placeholder="Where do you want to go?"
+                                value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{ fontWeight: '600', color: '#000000' }}
                             />
@@ -422,58 +501,102 @@ const SearchRoute = () => {
                     {/* Filters Row */}
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', position: 'relative', zIndex: 1 }}>
                         <div ref={departDropdownRef} style={{ position: 'relative' }}>
-                            <div 
-                                ref={departButtonRef}
-                                className="filter-chip dropdown" 
-                                onClick={(e) => {
-                                    const rect = departButtonRef.current.getBoundingClientRect();
-                                    setDropdownPosition({
-                                        top: rect.bottom + 4,
-                                        left: rect.left
-                                    });
-                                    setIsDepartDropdownOpen(!isDepartDropdownOpen);
-                                }}
-                                style={{ 
-                                    padding: '8px 16px', 
-                                    borderRadius: '20px', 
-                                    border: '1px solid #00C853', 
-                                    backgroundColor: selectedDepartOption !== 'Depart Now' ? '#00C853' : '#fff',
-                                    color: selectedDepartOption !== 'Depart Now' ? '#fff' : '#00C853',
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '4px', 
-                                    whiteSpace: 'nowrap',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                            >
+                        <div 
+                            ref={departButtonRef}
+                            onClick={(e) => {
+                                const rect = departButtonRef.current.getBoundingClientRect();
+                                setDropdownPosition({
+                                    top: rect.bottom + 4,
+                                    left: rect.left
+                                });
+                                setIsDepartDropdownOpen(!isDepartDropdownOpen);
+                            }}
+                            style={{ 
+                                padding: '8px 16px', 
+                                borderRadius: '20px', 
+                                border: '1px solid #00C853', 
+                                backgroundColor: selectedDepartOption !== 'Depart Now' ? '#00C853' : '#fff',
+                                color: selectedDepartOption !== 'Depart Now' ? '#fff' : '#00C853',
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '4px', 
+                                whiteSpace: 'nowrap',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
                                 <span>{selectedDepartOption}</span>
                                 <ChevronDown size={14} color={selectedDepartOption !== 'Depart Now' ? '#fff' : '#00C853'} style={{ transform: isDepartDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                             </div>
                         </div>
-                        <div className={`filter-chip ${activeFilters.includes('co2') ? 'active' : ''}`}
+                        <div 
                             onClick={() => setActiveFilters(prev => prev.includes('co2') ? prev.filter(f => f !== 'co2') : [...prev, 'co2'])}
-                            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #CED4DA', backgroundColor: activeFilters.includes('co2') ? '#00C853' : '#fff', color: activeFilters.includes('co2') ? '#fff' : '#343A40', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            style={{ 
+                                padding: '8px 16px', 
+                                borderRadius: '20px', 
+                                border: '1px solid #CED4DA', 
+                                backgroundColor: activeFilters.includes('co2') ? '#00C853' : '#fff', 
+                                color: activeFilters.includes('co2') ? '#fff' : '#343A40', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             Lowest CO₂
                         </div>
-                        <div className={`filter-chip ${activeFilters.includes('accessible') ? 'active' : ''}`}
+                        <div 
                             onClick={() => setActiveFilters(prev => prev.includes('accessible') ? prev.filter(f => f !== 'accessible') : [...prev, 'accessible'])}
-                            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #CED4DA', backgroundColor: activeFilters.includes('accessible') ? '#00C853' : '#fff', color: activeFilters.includes('accessible') ? '#fff' : '#343A40', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            style={{ 
+                                padding: '8px 16px', 
+                                borderRadius: '20px', 
+                                border: '1px solid #CED4DA', 
+                                backgroundColor: activeFilters.includes('accessible') ? '#00C853' : '#fff', 
+                                color: activeFilters.includes('accessible') ? '#fff' : '#343A40', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             Accessible
                         </div>
-                        <div className={`filter-chip ${activeFilters.includes('Safe Air Quality') ? 'active' : ''}`}
+                        <div 
                             onClick={() => setActiveFilters(prev => prev.includes('Safe Air Quality') ? prev.filter(f => f !== 'Safe Air Quality') : [...prev, 'Safe Air Quality'])}
-                            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #CED4DA', backgroundColor: activeFilters.includes('Safe Air Quality') ? '#00C853' : '#fff', color: activeFilters.includes('Safe Air Quality') ? '#fff' : '#343A40', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            style={{ 
+                                padding: '8px 16px', 
+                                borderRadius: '20px', 
+                                border: '1px solid #CED4DA', 
+                                backgroundColor: activeFilters.includes('Safe Air Quality') ? '#00C853' : '#fff', 
+                                color: activeFilters.includes('Safe Air Quality') ? '#fff' : '#343A40', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             Safe Air Quality
                         </div>
-                        <div className={`filter-chip ${activeFilters.includes('cheapest') ? 'active' : ''}`}
+                        <div 
                             onClick={() => setActiveFilters(prev => prev.includes('cheapest') ? prev.filter(f => f !== 'cheapest') : [...prev, 'cheapest'])}
-                            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #CED4DA', backgroundColor: activeFilters.includes('cheapest') ? '#00C853' : '#fff', color: activeFilters.includes('cheapest') ? '#fff' : '#343A40', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            style={{ 
+                                padding: '8px 16px', 
+                                borderRadius: '20px', 
+                                border: '1px solid #CED4DA', 
+                                backgroundColor: activeFilters.includes('cheapest') ? '#00C853' : '#fff', 
+                                color: activeFilters.includes('cheapest') ? '#fff' : '#343A40', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             Cheapest
                         </div>
-                        <div className={`filter-chip ${activeFilters.includes('fastest') ? 'active' : ''}`}
+                        <div 
                             onClick={() => setActiveFilters(prev => prev.includes('fastest') ? prev.filter(f => f !== 'fastest') : [...prev, 'fastest'])}
-                            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #CED4DA', backgroundColor: activeFilters.includes('fastest') ? '#00C853' : '#fff', color: activeFilters.includes('fastest') ? '#fff' : '#343A40', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            style={{ 
+                                padding: '8px 16px', 
+                                borderRadius: '20px', 
+                                border: '1px solid #CED4DA', 
+                                backgroundColor: activeFilters.includes('fastest') ? '#00C853' : '#fff', 
+                                color: activeFilters.includes('fastest') ? '#fff' : '#343A40', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             Fastest
                         </div>
                     </div>
@@ -560,18 +683,29 @@ const SearchRoute = () => {
                                         <div 
                                             key={route.id} 
                                             onClick={() => {
-                                                if (route.id === 1) {
+                                                try {
+                                                    // Store selected station data for next components
+                                                    setSelectedStation(route);
+                                                    localStorage.setItem('selectedRoute', JSON.stringify(route));
+                                                    console.log('Selected route:', route);
+                                                    
+                                                    if (route.id === 1) {
+                                                        navigate('/journey-details');
+                                                    } else if (route.id === 2) {
+                                                        navigate('/journey-details-2');
+                                                    } else if (route.id === 3) {
+                                                        navigate('/journey-details');
+                                                    } else if (route.id === 4) {
+                                                        navigate('/journey-details');
+                                                    } else if (route.id === 5) {
+                                                        navigate('/journey-details-2');
+                                                    } else {
+                                                        navigate('/Transit');
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Error selecting route:', error);
+                                                    // Fallback navigation
                                                     navigate('/journey-details');
-                                                } else if (route.id === 2) {
-                                                    navigate('/journey-details-2');
-                                                } else if (route.id === 3) {
-                                                    navigate('/journey-details');
-                                                } else if (route.id === 4) {
-                                                    navigate('/journey-details');
-                                                } else if (route.id === 5) {
-                                                    navigate('/journey-details-2');
-                                                } else {
-                                                    navigate('/Transit');
                                                 }
                                             }} 
                                             style={{ cursor: 'pointer' }}
@@ -592,7 +726,19 @@ const SearchRoute = () => {
             {showRecommendation && (
                 <div
                     onClick={() => {
-                        navigate('/journey-details');
+                        try {
+                            // Get the first recommended route
+                            const recommendedRoute = routes.find(route => route.recommended) || routes[0];
+                            if (recommendedRoute) {
+                                setSelectedStation(recommendedRoute);
+                                localStorage.setItem('selectedRoute', JSON.stringify(recommendedRoute));
+                                console.log('Selected recommended route:', recommendedRoute);
+                            }
+                            navigate('/journey-details');
+                        } catch (error) {
+                            console.error('Error selecting recommended route:', error);
+                            navigate('/journey-details');
+                        }
                     }}
                     style={{
                         position: 'fixed',

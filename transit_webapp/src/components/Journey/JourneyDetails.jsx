@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Bell, X, ChevronDown, Plus, Minus, Leaf } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import OSRMMap from '../Map/OSRMMap';
@@ -7,6 +7,20 @@ const JourneyDetails = () => {
     const navigate = useNavigate();
     const [departureTime, setDepartureTime] = useState('8:00 PM');
     const [minuteAdjustment, setMinuteAdjustment] = useState(15);
+    const [selectedRoute, setSelectedRoute] = useState(null);
+
+    // Load selected route data from localStorage
+    useEffect(() => {
+        const storedRoute = localStorage.getItem('selectedRoute');
+        if (storedRoute) {
+            try {
+                const routeData = JSON.parse(storedRoute);
+                setSelectedRoute(routeData);
+            } catch (error) {
+                console.error('Error parsing stored route:', error);
+            }
+        }
+    }, []);
 
     const handleIncreaseTime = () => {
         setMinuteAdjustment(prev => Math.min(prev + 5, 60));
@@ -123,11 +137,13 @@ const JourneyDetails = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px' }}>
                     <div>
                         <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px' }}>
-                            Bus
+                            {selectedRoute?.type.charAt(0).toUpperCase() + selectedRoute?.type.slice(1) || 'Bus'}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
                             <span style={{ fontSize: '16px', color: '#FFA726' }}>⭐</span>
-                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#FFA726' }}>Recommended</span>
+                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#FFA726' }}>
+                                {selectedRoute?.recommended ? 'Recommended' : 'Available'}
+                            </span>
                         </div>
                     </div>
                     <button
@@ -151,7 +167,7 @@ const JourneyDetails = () => {
                 {/* Station Info */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px' }}>
                     <div style={{ fontSize: '18px', fontWeight: '600', color: '#FFFFFF' }}>
-                        Meskel Square Station
+                        {selectedRoute?.station || 'Station'}
                     </div>
                     <div style={{
                         backgroundColor: '#FFFFFF',
@@ -161,13 +177,13 @@ const JourneyDetails = () => {
                         fontWeight: '700',
                         color: '#054777'
                     }}>
-                        $ 1.80
+                        {selectedRoute?.cost || '$1.80'}
                     </div>
                 </div>
 
                 {/* Route Details */}
                 <div style={{ fontSize: '13px', color: '#FFFFFF', marginBottom: '16px', opacity: 0.9 }}>
-                    6.5 km | 30 mins | Arrival time: 8:58 pm
+                    {selectedRoute?.distance || '6.5 km'} | {selectedRoute?.duration || '30 mins'} | Arrival time: {selectedRoute?.arrivalTime || '8:58 pm'}
                 </div>
 
                 {/* Chips Row */}
@@ -194,7 +210,7 @@ const JourneyDetails = () => {
                         gap: '4px'
                     }}>
                         <Leaf size={12} color="#2E7D32" fill="#2E7D32" />
-                        <span>320g CO₂</span>
+                        <span>{selectedRoute?.co2 || '320g CO₂'}</span>
                     </div>
                     <div style={{
                         backgroundColor: '#00C853',
@@ -318,7 +334,7 @@ const JourneyDetails = () => {
                         </div>
                         <div style={{ flex: 1, paddingTop: '8px' }}>
                             <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
-                                Board Bus Route: Shola → Meskel
+                                Board Bus Route: Shola → {selectedRoute?.station || 'Destination Station'}
                             </div>
                             <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
                                 8:05 PM
@@ -331,33 +347,39 @@ const JourneyDetails = () => {
 
                     {/* Step 3 */}
                     <div style={{ display: 'flex', gap: '12px' }}>
-                        <div style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            backgroundColor: '#00C853',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '20px',
-                            flexShrink: 0
-                        }}>
-                            ✓
-                        </div>
-                        <div style={{ flex: 1, paddingTop: '8px' }}>
-                            <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
-                                Arrive at Meskel Square Station
-                            </div>
-                            <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
-                                8:50PM
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                            <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '50%',
+                                                backgroundColor: '#00C853',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '20px',
+                                                flexShrink: 0
+                                            }}>
+                                                ✓
+                                            </div>
+                                            <div style={{ flex: 1, paddingTop: '8px' }}>
+                                                <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
+                                                    Arrive at {selectedRoute?.station || 'Meskel Square Station'}
+                                                </div>
+                                                <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
+                                                    8:50PM
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                {/* Start Trip Button */}
+                                    {/* Start Trip Button */}
                 <button
-                    onClick={() => navigate('/active-trip')}
+                    onClick={() => {
+                        // Pass the route data to ActiveTrip
+                        if (selectedRoute) {
+                            localStorage.setItem('activeTripRoute', JSON.stringify(selectedRoute));
+                        }
+                        navigate('/active-trip');
+                    }}
                     style={{
                         width: '100%',
                         backgroundColor: '#00C853',
