@@ -13,9 +13,9 @@ const BottomNav = ({ onDisabilityClick }) => {
                 <Map size={24} />
                 <span>My Trips</span>
             </NavLink>
-            
+
             {/* Floating Disability Mode Button */}
-            <button 
+            <button
                 className="disability-mode-button"
                 style={{
                     position: 'absolute',
@@ -33,12 +33,13 @@ const BottomNav = ({ onDisabilityClick }) => {
                     boxShadow: '0 4px 12px rgba(255, 0, 0, 0.4)',
                     cursor: 'pointer',
                     zIndex: 9999,
+                    overlay: 'visible',
                 }}
                 onClick={onDisabilityClick}
             >
                 <Accessibility size={32} color="#FFFFFF" />
             </button>
-            
+
             <NavLink to="/disability" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <Map size={24} />
                 <span>Disability</span>

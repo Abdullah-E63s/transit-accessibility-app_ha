@@ -10,6 +10,7 @@ import VerifyDisability from './components/Auth/VerifyDisability';
 // Dashboard Components
 import Home from './components/Dashboard/Home';
 import SearchRoute from './components/Dashboard/SearchRoute';
+import Games from './components/Dashboard/Games';
 
 // Transit Components
 import TransitSearch from './components/Transit/TransitSearch';
@@ -28,6 +29,7 @@ import MyTrips from './components/Trips/MyTrips';
 // Navigation Components
 import BottomNav from './components/Navigation/BottomNav';
 import DisabilityFAB from './components/Navigation/DisabilityFAB';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children, isLoggedIn }) => {
@@ -136,10 +138,7 @@ function App() {
                     } />
                     <Route path="/games" element={
                         <ProtectedRoute isLoggedIn={isLoggedIn}>
-                            <div className="screen" style={{ padding: '40px 24px' }}>
-                                <h1>Games</h1>
-                                <p>Gamification features coming soon!</p>
-                            </div>
+                            <Games />
                         </ProtectedRoute>
                     } />
                 </Routes>
@@ -158,6 +157,9 @@ function App() {
                         }}>
                             <div style={{ pointerEvents: 'auto' }}>
                                 <BottomNav onDisabilityClick={() => setIsDisabilityModalOpen(true)} />
+                            </div>
+                            <div style={{ pointerEvents: 'auto' }}>
+                                <DisabilityFAB onOpen={() => setIsDisabilityModalOpen(true)} />
                             </div>
                         </div>
                     </>

@@ -1,7 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import WeatherCard from './WeatherCard';
-import CO2Card from './CO2Card';
-import { ArrowLeft, Bell, MapPin, ArrowRight, Menu, Bus, Train, TrainFront, ChevronDown, Star, MenuIcon, Mic, Search, LocateFixed } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ArrowLeft, Bell, MapPin, Menu, Bus, Train, TrainFront, ChevronDown, LocateFixed, Search } from 'lucide-react';
 import RouteCard from '../Transit/RouteCard';
 import { useNavigate, useLocation } from 'react-router-dom';
 import OSRMMap from '../Map/OSRMMap';
@@ -9,10 +7,10 @@ import OSRMMap from '../Map/OSRMMap';
 const SearchRoute = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Get search query from navigation state
     const initialSearchQuery = location.state?.searchQuery || '';
-    
+
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
     const [activeTab, setActiveTab] = useState('bus');
     const [activeFilters, setActiveFilters] = useState(['accessible']);
@@ -22,9 +20,7 @@ const SearchRoute = () => {
     const [selectedDepartOption, setSelectedDepartOption] = useState('Depart Now');
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
     const [showRecommendation, setShowRecommendation] = useState(false);
-    const [searchResults, setSearchResults] = useState([]);
-    const [isSearching, setIsSearching] = useState(false);
-    const [selectedStation, setSelectedStation] = useState(null);
+
     const drawerRef = useRef(null);
     const startYRef = useRef(0);
     const startPosRef = useRef(0);
@@ -113,33 +109,33 @@ const SearchRoute = () => {
     // Function to search for places using backend API
     const searchPlaces = async (query) => {
         if (!query || query.length < 2) {
-            setSearchResults([]);
+            // setSearchResults([]); // Removed unused state setter
             return;
         }
 
-        setIsSearching(true);
+        // setIsSearching(true); // Removed unused state setter
         try {
             console.log('Searching for:', query);
             const response = await fetch(`http://localhost:8000/api/maps/geocode?q=${encodeURIComponent(query)}&limit=5`);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data = await response.json();
             console.log('Search results:', data);
-            
+
             if (data.results && Array.isArray(data.results)) {
-                setSearchResults(data.results);
+                // setSearchResults(data.results); // This state was unused, so we just log for now
             } else {
                 console.warn('No results found or invalid response format');
-                setSearchResults([]);
+                // setSearchResults([]); // Removed unused state setter
             }
         } catch (error) {
             console.error('Error searching places:', error);
-            setSearchResults([]);
+            // setSearchResults([]); // Removed unused state setter
         } finally {
-            setIsSearching(false);
+            // setIsSearching(false); // Removed unused state setter
         }
     };
 
@@ -156,13 +152,13 @@ const SearchRoute = () => {
             // Clean the search query
             const cleanQuery = searchQuery.trim();
             console.log('Creating routes for query:', cleanQuery);
-            
+
             return baseRoutes.map(route => ({
                 ...route,
                 station: route.type === 'bus' ? `${cleanQuery} Bus Station` :
-                        route.type === 'train' ? `${cleanQuery} Train Station` :
+                    route.type === 'train' ? `${cleanQuery} Train Station` :
                         route.type === 'mrt' ? (route.id === 5 ? `${cleanQuery} LRT Station` : `${cleanQuery} MRT Station`) :
-                        `${cleanQuery} Station`
+                            `${cleanQuery} Station`
             }));
         } catch (error) {
             console.error('Error creating routes from search:', error);
@@ -179,7 +175,7 @@ const SearchRoute = () => {
         if (filteredRoutes.length > 0) {
             setShowRecommendation(true);
         }
-    }, [filteredRoutes]);
+    }, [filteredRoutes]); // Dependency array fixed
 
     // Search for places when query changes
     useEffect(() => {
@@ -188,7 +184,7 @@ const SearchRoute = () => {
         }, 300); // Debounce search
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery]);
+    }, [searchQuery]); // Dependency array fixed
 
     // Show recommendation when routes are available
     useEffect(() => {
@@ -204,17 +200,17 @@ const SearchRoute = () => {
         startPosRef.current = drawerPosition;
     };
 
-    const handleDragMove = (e) => {
+    const handleDragMove = useCallback((e) => {
         if (!isDragging) return;
-        
+
         const currentY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
         const deltaY = startYRef.current - currentY;
         const newPosition = Math.max(20, Math.min(65, startPosRef.current + (deltaY / window.innerHeight) * 100));
-        
-        setDrawerPosition(newPosition);
-    };
 
-    const handleDragEnd = () => {
+        setDrawerPosition(newPosition);
+    }, [isDragging]);
+
+    const handleDragEnd = useCallback(() => {
         setIsDragging(false);
         // Snap to positions
         if (drawerPosition < 30) {
@@ -224,7 +220,7 @@ const SearchRoute = () => {
         } else {
             setDrawerPosition(40);
         }
-    };
+    }, [drawerPosition]);
 
     useEffect(() => {
         if (isDragging) {
@@ -245,7 +241,7 @@ const SearchRoute = () => {
             window.removeEventListener('touchmove', handleDragMove);
             window.removeEventListener('touchend', handleDragEnd);
         };
-    }, [isDragging, drawerPosition]);
+    }, [isDragging, handleDragMove, handleDragEnd]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -286,7 +282,7 @@ const SearchRoute = () => {
                 zIndex: 0,
                 pointerEvents: 'auto'  // Enable mouse interactions
             }}>
-                <OSRMMap 
+                <OSRMMap
                     center={[3.1390, 101.6869]} // Kuala Lumpur
                     zoom={13}
                     markers={[
@@ -318,13 +314,13 @@ const SearchRoute = () => {
                     ]}
                 />
             </div>
-            
+
             {/* Header (App Bar) */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#EAEAEA', color: '#000000', position: 'fixed', top: 0, left: 0, right: 0, height: '56px', zIndex: 10 }}>
                 {/* Left */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate('/home')}>
+                        onClick={() => navigate('/home')}>
                         <ArrowLeft size={24} color="#343A40" />
                     </button>
                 </div>
@@ -334,16 +330,16 @@ const SearchRoute = () => {
                 {/* Right */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate('/notifications')}>
+                        onClick={() => navigate('/notifications')}>
                         <Bell size={24} color="#343A40" />
                     </button>
                 </div>
             </div>
 
             {/* Top Container - 10% of screen */}
-            <div style={{ 
-                height: '10%', 
-                position: 'relative', 
+            <div style={{
+                height: '10%',
+                position: 'relative',
                 backgroundColor: '#FFFFFF',
                 flexShrink: 0,
                 display: 'flex',
@@ -371,7 +367,7 @@ const SearchRoute = () => {
             </div>
 
             {/* Bottom Container - 80% of screen */}
-            <div style={{ 
+            <div style={{
                 flex: 1,
                 position: 'relative',
                 backgroundColor: 'transparent',
@@ -418,7 +414,7 @@ const SearchRoute = () => {
             </button>
 
             {/* Draggable Container */}
-            <div 
+            <div
                 ref={drawerRef}
                 className="draggable-container"
                 style={{
@@ -438,7 +434,7 @@ const SearchRoute = () => {
                 }}
             >
                 {/* Drag Handle */}
-                <div 
+                <div
                     onMouseDown={handleDragStart}
                     onTouchStart={handleDragStart}
                     style={{
@@ -489,7 +485,7 @@ const SearchRoute = () => {
                     </div>
 
                     {/* Suggested Routes Header */}
-                    <div style={{ 
+                    <div style={{
                         marginBottom: '16px',
                         fontSize: '14px',
                         fontWeight: '50',
@@ -501,99 +497,99 @@ const SearchRoute = () => {
                     {/* Filters Row */}
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', position: 'relative', zIndex: 1 }}>
                         <div ref={departDropdownRef} style={{ position: 'relative' }}>
-                        <div 
-                            ref={departButtonRef}
-                            onClick={(e) => {
-                                const rect = departButtonRef.current.getBoundingClientRect();
-                                setDropdownPosition({
-                                    top: rect.bottom + 4,
-                                    left: rect.left
-                                });
-                                setIsDepartDropdownOpen(!isDepartDropdownOpen);
-                            }}
-                            style={{ 
-                                padding: '8px 16px', 
-                                borderRadius: '20px', 
-                                border: '1px solid #00C853', 
-                                backgroundColor: selectedDepartOption !== 'Depart Now' ? '#00C853' : '#fff',
-                                color: selectedDepartOption !== 'Depart Now' ? '#fff' : '#00C853',
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '4px', 
-                                whiteSpace: 'nowrap',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                        >
+                            <div
+                                ref={departButtonRef}
+                                onClick={(e) => {
+                                    const rect = departButtonRef.current.getBoundingClientRect();
+                                    setDropdownPosition({
+                                        top: rect.bottom + 4,
+                                        left: rect.left
+                                    });
+                                    setIsDepartDropdownOpen(!isDepartDropdownOpen);
+                                }}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '20px',
+                                    border: '1px solid #00C853',
+                                    backgroundColor: selectedDepartOption !== 'Depart Now' ? '#00C853' : '#fff',
+                                    color: selectedDepartOption !== 'Depart Now' ? '#fff' : '#00C853',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    whiteSpace: 'nowrap',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
                                 <span>{selectedDepartOption}</span>
                                 <ChevronDown size={14} color={selectedDepartOption !== 'Depart Now' ? '#fff' : '#00C853'} style={{ transform: isDepartDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                             </div>
                         </div>
-                        <div 
+                        <div
                             onClick={() => setActiveFilters(prev => prev.includes('co2') ? prev.filter(f => f !== 'co2') : [...prev, 'co2'])}
-                            style={{ 
-                                padding: '8px 16px', 
-                                borderRadius: '20px', 
-                                border: '1px solid #CED4DA', 
-                                backgroundColor: activeFilters.includes('co2') ? '#00C853' : '#fff', 
-                                color: activeFilters.includes('co2') ? '#fff' : '#343A40', 
-                                cursor: 'pointer', 
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #CED4DA',
+                                backgroundColor: activeFilters.includes('co2') ? '#00C853' : '#fff',
+                                color: activeFilters.includes('co2') ? '#fff' : '#343A40',
+                                cursor: 'pointer',
                                 whiteSpace: 'nowrap'
                             }}
                         >
                             Lowest CO₂
                         </div>
-                        <div 
+                        <div
                             onClick={() => setActiveFilters(prev => prev.includes('accessible') ? prev.filter(f => f !== 'accessible') : [...prev, 'accessible'])}
-                            style={{ 
-                                padding: '8px 16px', 
-                                borderRadius: '20px', 
-                                border: '1px solid #CED4DA', 
-                                backgroundColor: activeFilters.includes('accessible') ? '#00C853' : '#fff', 
-                                color: activeFilters.includes('accessible') ? '#fff' : '#343A40', 
-                                cursor: 'pointer', 
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #CED4DA',
+                                backgroundColor: activeFilters.includes('accessible') ? '#00C853' : '#fff',
+                                color: activeFilters.includes('accessible') ? '#fff' : '#343A40',
+                                cursor: 'pointer',
                                 whiteSpace: 'nowrap'
                             }}
                         >
                             Accessible
                         </div>
-                        <div 
+                        <div
                             onClick={() => setActiveFilters(prev => prev.includes('Safe Air Quality') ? prev.filter(f => f !== 'Safe Air Quality') : [...prev, 'Safe Air Quality'])}
-                            style={{ 
-                                padding: '8px 16px', 
-                                borderRadius: '20px', 
-                                border: '1px solid #CED4DA', 
-                                backgroundColor: activeFilters.includes('Safe Air Quality') ? '#00C853' : '#fff', 
-                                color: activeFilters.includes('Safe Air Quality') ? '#fff' : '#343A40', 
-                                cursor: 'pointer', 
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #CED4DA',
+                                backgroundColor: activeFilters.includes('Safe Air Quality') ? '#00C853' : '#fff',
+                                color: activeFilters.includes('Safe Air Quality') ? '#fff' : '#343A40',
+                                cursor: 'pointer',
                                 whiteSpace: 'nowrap'
                             }}
                         >
                             Safe Air Quality
                         </div>
-                        <div 
+                        <div
                             onClick={() => setActiveFilters(prev => prev.includes('cheapest') ? prev.filter(f => f !== 'cheapest') : [...prev, 'cheapest'])}
-                            style={{ 
-                                padding: '8px 16px', 
-                                borderRadius: '20px', 
-                                border: '1px solid #CED4DA', 
-                                backgroundColor: activeFilters.includes('cheapest') ? '#00C853' : '#fff', 
-                                color: activeFilters.includes('cheapest') ? '#fff' : '#343A40', 
-                                cursor: 'pointer', 
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #CED4DA',
+                                backgroundColor: activeFilters.includes('cheapest') ? '#00C853' : '#fff',
+                                color: activeFilters.includes('cheapest') ? '#fff' : '#343A40',
+                                cursor: 'pointer',
                                 whiteSpace: 'nowrap'
                             }}
                         >
                             Cheapest
                         </div>
-                        <div 
+                        <div
                             onClick={() => setActiveFilters(prev => prev.includes('fastest') ? prev.filter(f => f !== 'fastest') : [...prev, 'fastest'])}
-                            style={{ 
-                                padding: '8px 16px', 
-                                borderRadius: '20px', 
-                                border: '1px solid #CED4DA', 
-                                backgroundColor: activeFilters.includes('fastest') ? '#00C853' : '#fff', 
-                                color: activeFilters.includes('fastest') ? '#fff' : '#343A40', 
-                                cursor: 'pointer', 
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #CED4DA',
+                                backgroundColor: activeFilters.includes('fastest') ? '#00C853' : '#fff',
+                                color: activeFilters.includes('fastest') ? '#fff' : '#343A40',
+                                cursor: 'pointer',
                                 whiteSpace: 'nowrap'
                             }}
                         >
@@ -602,25 +598,25 @@ const SearchRoute = () => {
                     </div>
 
                     {/* Transport Type Tabs */}
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '0', 
-                        marginBottom: '16px', 
+                    <div style={{
+                        display: 'flex',
+                        gap: '0',
+                        marginBottom: '16px',
                         borderBottom: '1px solid rgba(255,255,255,0.2)',
                         backgroundColor: 'transparent'
                     }}>
-                        <div 
-                            onClick={() => setActiveTab('bus')} 
-                            style={{ 
+                        <div
+                            onClick={() => setActiveTab('bus')}
+                            style={{
                                 flex: 1,
-                                display: 'flex', 
-                                flexDirection: 'row', 
-                                alignItems: 'center', 
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px', 
-                                padding: '12px 8px', 
-                                cursor: 'pointer', 
-                                position: 'relative', 
+                                gap: '8px',
+                                padding: '12px 8px',
+                                cursor: 'pointer',
+                                position: 'relative',
                                 color: activeTab === 'bus' ? '#FFFF00' : '#FFFFFF',
                                 backgroundColor: activeTab === 'bus' ? 'rgba(255, 193, 7, 0.1)' : 'transparent',
                                 borderBottom: activeTab === 'bus' ? '3px solid #FFFF00' : '3px solid transparent',
@@ -630,18 +626,18 @@ const SearchRoute = () => {
                             <Bus size={24} color={activeTab === 'bus' ? '#FFFF00' : '#FFFFFF'} />
                             <span style={{ fontSize: '12px', fontWeight: activeTab === 'bus' ? '600' : '400' }}>Bus</span>
                         </div>
-                        <div 
-                            onClick={() => setActiveTab('train')} 
-                            style={{ 
+                        <div
+                            onClick={() => setActiveTab('train')}
+                            style={{
                                 flex: 1,
-                                display: 'flex', 
-                                flexDirection: 'row', 
-                                alignItems: 'center', 
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px', 
-                                padding: '12px 8px', 
-                                cursor: 'pointer', 
-                                position: 'relative', 
+                                gap: '8px',
+                                padding: '12px 8px',
+                                cursor: 'pointer',
+                                position: 'relative',
                                 color: activeTab === 'train' ? '#FFFF00' : '#FFFFFF',
                                 backgroundColor: activeTab === 'train' ? 'rgba(255, 193, 7, 0.1)' : 'transparent',
                                 borderBottom: activeTab === 'train' ? '3px solid #FFFF00' : '3px solid transparent',
@@ -651,18 +647,18 @@ const SearchRoute = () => {
                             <Train size={24} color={activeTab === 'train' ? '#FFFF00' : '#FFFFFF'} />
                             <span style={{ fontSize: '12px', fontWeight: activeTab === 'train' ? '600' : '400' }}>Train</span>
                         </div>
-                        <div 
-                            onClick={() => setActiveTab('mrt')} 
-                            style={{ 
+                        <div
+                            onClick={() => setActiveTab('mrt')}
+                            style={{
                                 flex: 1,
-                                display: 'flex', 
-                                flexDirection: 'row', 
-                                alignItems: 'center', 
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px', 
-                                padding: '12px 8px', 
-                                cursor: 'pointer', 
-                                position: 'relative', 
+                                gap: '8px',
+                                padding: '12px 8px',
+                                cursor: 'pointer',
+                                position: 'relative',
                                 color: activeTab === 'mrt' ? '#FFFF00' : '#FFFFFF',
                                 backgroundColor: activeTab === 'mrt' ? 'rgba(255, 193, 7, 0.1)' : 'transparent',
                                 borderBottom: activeTab === 'mrt' ? '3px solid #FFFF00' : '3px solid transparent',
@@ -680,15 +676,15 @@ const SearchRoute = () => {
                             <>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {filteredRoutes.map(route => (
-                                        <div 
-                                            key={route.id} 
+                                        <div
+                                            key={route.id}
                                             onClick={() => {
                                                 try {
                                                     // Store selected station data for next components
-                                                    setSelectedStation(route);
+                                                    // setSelectedStation(route); // Removed unused state setter
                                                     localStorage.setItem('selectedRoute', JSON.stringify(route));
                                                     console.log('Selected route:', route);
-                                                    
+
                                                     if (route.id === 1) {
                                                         navigate('/journey-details');
                                                     } else if (route.id === 2) {
@@ -707,7 +703,7 @@ const SearchRoute = () => {
                                                     // Fallback navigation
                                                     navigate('/journey-details');
                                                 }
-                                            }} 
+                                            }}
                                             style={{ cursor: 'pointer' }}
                                         >
                                             <RouteCard route={route} />
@@ -730,7 +726,6 @@ const SearchRoute = () => {
                             // Get the first recommended route
                             const recommendedRoute = routes.find(route => route.recommended) || routes[0];
                             if (recommendedRoute) {
-                                setSelectedStation(recommendedRoute);
                                 localStorage.setItem('selectedRoute', JSON.stringify(recommendedRoute));
                                 console.log('Selected recommended route:', recommendedRoute);
                             }
@@ -804,7 +799,7 @@ const SearchRoute = () => {
 
             {/* Dropdown Menu - Fixed Position Outside Container */}
             {isDepartDropdownOpen && (
-                <div 
+                <div
                     ref={dropdownMenuRef}
                     onClick={(e) => e.stopPropagation()}
                     style={{

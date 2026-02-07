@@ -5,7 +5,8 @@ import OSRMMap from '../Map/OSRMMap';
 
 const JourneyDetails2 = () => {
     const navigate = useNavigate();
-    const [departureTime, setDepartureTime] = useState('8:00 PM');
+    const [departureTime] = useState('8:00 PM');
+
     const [minuteAdjustment, setMinuteAdjustment] = useState(15);
     const [selectedRoute, setSelectedRoute] = useState(null);
 
@@ -41,7 +42,7 @@ const JourneyDetails2 = () => {
                 bottom: 0,
                 zIndex: 0
             }}>
-                <OSRMMap 
+                <OSRMMap
                     center={[3.1390, 101.6869]} // Kuala Lumpur
                     zoom={13}
                     markers={[
@@ -79,7 +80,7 @@ const JourneyDetails2 = () => {
                 {/* Left */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate(-1)}>
+                        onClick={() => navigate(-1)}>
                         <ArrowLeft size={24} color="#343A40" />
                     </button>
                 </div>
@@ -89,7 +90,7 @@ const JourneyDetails2 = () => {
                 {/* Right */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate('/notifications')}>
+                        onClick={() => navigate('/notifications')}>
                         <Bell size={24} color="#343A40" />
                     </button>
                 </div>
@@ -108,7 +109,7 @@ const JourneyDetails2 = () => {
                 boxShadow: '1px 13px 10px rgba(0, 0, 0, 0.15)'
             }}>
                 <div style={{ fontSize: '16px', fontWeight: '800', color: '#000000', marginBottom: '4px' }}>
-                    Air quality is unhealthy for sensitive 
+                    Air quality is unhealthy for sensitive
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: '800', color: '#000000', marginBottom: '4px' }}>
                     groups. Not recommended for Asthma
@@ -318,31 +319,31 @@ const JourneyDetails2 = () => {
                     <div style={{ width: '2px', height: '24px', backgroundColor: 'rgba(255,255,255,0.3)', marginLeft: '19px', marginBottom: '8px' }} />
 
                     {/* Step 2 */}
-                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                                            <div style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '50%',
-                                                backgroundColor: '#00C853',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontSize: '20px',
-                                                flexShrink: 0
-                                            }}>
-                                                🚌
-                                            </div>
-                                            <div style={{ flex: 1, paddingTop: '8px' }}>
-                                                <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
-                                                    Board Bus Route: Arrive at {selectedRoute?.station || 'Meskel Square Station'}
-                                                </div>
-                                                <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
-                                                    8:05 PM
-                                                </div>
-                                            </div>
-                                        </div>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: '#00C853',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '20px',
+                            flexShrink: 0
+                        }}>
+                            🚌
+                        </div>
+                        <div style={{ flex: 1, paddingTop: '8px' }}>
+                            <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
+                                Board Bus Route: Arrive at {selectedRoute?.station || 'Meskel Square Station'}
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
+                                8:05 PM
+                            </div>
+                        </div>
+                    </div>
 
-                                        {/* Connector Line */}
+                    {/* Connector Line */}
                     <div style={{ width: '2px', height: '24px', backgroundColor: 'rgba(255,255,255,0.3)', marginLeft: '19px', marginBottom: '8px' }} />
 
                     {/* Step 3 */}

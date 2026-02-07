@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Bell, ArrowUp, Search, X, Train, Bus, TrainFront } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ArrowLeft, Bell, ArrowUp, Search, Train, Bus, TrainFront } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import OSRMMap from '../Map/OSRMMap';
 
 const ActiveTrip = () => {
     const navigate = useNavigate();
-    const [isActive, setIsActive] = useState(true);
     const [drawerPosition, setDrawerPosition] = useState(85);
     const [isDragging, setIsDragging] = useState(false);
     const [activeTripRoute, setActiveTripRoute] = useState(null);
@@ -32,27 +31,25 @@ const ActiveTrip = () => {
         startPosRef.current = drawerPosition;
     };
 
-    const handleDragMove = (e) => {
+    const handleDragMove = useCallback((e) => {
         if (!isDragging) return;
-        
+
         const currentY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
         const deltaY = startYRef.current - currentY;
         const newPosition = Math.max(20, Math.min(85, startPosRef.current + (deltaY / window.innerHeight) * 100));
-        
-        setDrawerPosition(newPosition);
-    };
 
-    const handleDragEnd = () => {
+        setDrawerPosition(newPosition);
+    }, [isDragging]);
+
+    const handleDragEnd = useCallback(() => {
         setIsDragging(false);
         // Snap to positions
-        if (drawerPosition < 40) {
-            setDrawerPosition(20);
-        } else if (drawerPosition > 60) {
-            setDrawerPosition(85);
+        if (drawerPosition < 50) {
+            setDrawerPosition(30);
         } else {
-            setDrawerPosition(50);
+            setDrawerPosition(85);
         }
-    };
+    }, [drawerPosition]);
 
     useEffect(() => {
         if (isDragging) {
@@ -73,7 +70,7 @@ const ActiveTrip = () => {
             window.removeEventListener('touchmove', handleDragMove);
             window.removeEventListener('touchend', handleDragEnd);
         };
-    }, [isDragging, drawerPosition]);
+    }, [isDragging, handleDragMove, handleDragEnd]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
@@ -86,7 +83,7 @@ const ActiveTrip = () => {
                 bottom: 0,
                 zIndex: 0
             }}>
-                <OSRMMap 
+                <OSRMMap
                     center={[3.1390, 101.6869]} // Kuala Lumpur
                     zoom={13}
                     markers={[
@@ -125,7 +122,7 @@ const ActiveTrip = () => {
                 {/* Left */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate(-1)}>
+                        onClick={() => navigate(-1)}>
                         <ArrowLeft size={24} color="#343A40" />
                     </button>
                 </div>
@@ -135,7 +132,7 @@ const ActiveTrip = () => {
                 {/* Right */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate('/notifications')}>
+                        onClick={() => navigate('/notifications')}>
                         <Bell size={24} color="#343A40" />
                     </button>
                 </div>
@@ -163,7 +160,7 @@ const ActiveTrip = () => {
             </div>
 
             {/* Blue Details Card */}
-            <div 
+            <div
                 ref={drawerRef}
                 style={{
                     position: 'fixed',
@@ -180,7 +177,7 @@ const ActiveTrip = () => {
                     flexDirection: 'column'
                 }}>
                 {/* Drag Handle */}
-                <div 
+                <div
                     onMouseDown={handleDragStart}
                     onTouchStart={handleDragStart}
                     style={{
@@ -207,235 +204,235 @@ const ActiveTrip = () => {
                     overflowX: 'hidden',
                     padding: '0 20px 120px 20px'
                 }}>
-                {/* Duration Header */}
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'flex-start',
-                    marginBottom: '16px'
-                }}>
-                    <button style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        backgroundColor: 'transparent',
-                        border: '2px solid #FFFFFF',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: '#FFFFFF'
-                    }}>
-                        ✕
-                    </button>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ fontSize: '24px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {activeTripRoute?.type === 'train' ? <Train size={28} color="#FFFFFF" /> :
-                             activeTripRoute?.type === 'mrt' ? <TrainFront size={28} color="#FFFFFF" /> :
-                             <Bus size={28} color="#FFFFFF" />}
-                            {activeTripRoute?.duration || '23 Min'}
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#FFFFFF', opacity: 0.9, textAlign: 'center' }}>
-                            5.1 km | 8:15 PM
-                        </div>
-                    </div>
-                    <button style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        backgroundColor: 'transparent',
-                        border: '2px solid #FFFFFF',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: '#FFFFFF'
-                    }}>
-                        <Search size={20} />
-                    </button>
-                </div>
-
-                {/* Walk Section - Combined Card */}
-                <div style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    marginBottom: '16px'
-                }}>
-                    {/* Brown Outer Container */}
+                    {/* Duration Header */}
                     <div style={{
-                        backgroundColor: '#AC7F5E',
-                        borderRadius: '8px',
-                        padding: '12px 16px',
-                        marginBottom: '12px'
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '16px'
                     }}>
-                        {/* White Top Section */}
-                        <div style={{ 
-                            backgroundColor: '#ffffff',
-                            padding: '8px 12px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#000000',
+                        <button style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: 'transparent',
+                            border: '2px solid #FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
-                            borderRadius: '8px',
-                            maxWidth: 'fit-content'
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            color: '#FFFFFF'
                         }}>
-                            <span>🚶</span>
-                            <span>Walk 8 mins to</span>
-                        </div>
-                    </div>
-
-                    {/* White Details Section */}
-                    <div style={{ padding: '16px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000', marginBottom: '4px', marginTop: 'px' }}>
-                            Shola Market
-                        </div>
-                        <div style={{ fontSize: '13px', color: '#6C757D', marginBottom: '10px' }}>
-                            680 m left
-                        </div>
-
-                        {/* Divider Line */}
-                        <div style={{ width: '100%', height: '0.5px', backgroundColor: '#AC7F5E', marginBottom: '16px' }} />
-                        
-                        {/* Route Visualization */}
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                            
-                            {/* Vertical Line */}
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ width: '2px', height: '10px', backgroundColor: '#CED4DA' }} />
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#CED4DA', borderRadius: '50%' }} />
-                                <div style={{ width: '2px', height: '20px', backgroundColor: '#CED4DA' }} />
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#CED4DA', borderRadius: '50%' }} />
+                            ✕
+                        </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ fontSize: '24px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {activeTripRoute?.type === 'train' ? <Train size={28} color="#FFFFFF" /> :
+                                    activeTripRoute?.type === 'mrt' ? <TrainFront size={28} color="#FFFFFF" /> :
+                                        <Bus size={28} color="#FFFFFF" />}
+                                {activeTripRoute?.duration || '23 Min'}
                             </div>
-                            
-                            {/* Text Content */}
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '12px', color: '#6C757D', marginTop: '10px', marginBottom: '10px' }}>
-                                    Start from Cherry Residence
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6C757D' }}>
-                                    Turn Right onto Jalan Cherry 2
-                                </div>
+                            <div style={{ fontSize: '14px', color: '#FFFFFF', opacity: 0.9, textAlign: 'center' }}>
+                                5.1 km | 8:15 PM
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Wait For Section - Combined Card */}
-                <div style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    marginBottom: '16px'
-                }}>
-                   {/* Brown Outer Container */}
-                    <div style={{
-                        backgroundColor: '#AC7F5E',
-                        borderRadius: '8px',
-                        padding: '12px 16px',
-                    }}>
-                        {/* White Top Section */}
-                        <div style={{ 
-                            backgroundColor: '#ffffff',
-                            padding: '8px 12px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#000000',
+                        <button style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: 'transparent',
+                            border: '2px solid #FFFFFF',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
-                            borderRadius: '8px',
-                            maxWidth: 'fit-content'
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            color: '#FFFFFF'
                         }}>
-                        <span>🚌</span>
-                        <span>Wait for S210 Bus</span>
-                        </div>
+                            <Search size={20} />
+                        </button>
                     </div>
 
-                    {/* White Details Section */}
-                    <div style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                            <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000' }}>
-                                S210 - Shola Market Bus Stop
-                            </div>
-                            <div style={{
-                                backgroundColor: '#E1E1E1',
-                                border: '1px solid #000000',
-                                color: '#000000',
-                                padding: '4px 12px',
-                                borderRadius: '6px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                            }}>
-                                8 mins
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <div style={{ fontSize: '13px', color: '#6C757D' }}>
-                                600 m left
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#000000', fontWeight: '600' }}>
-                                15, 40 mins
-                            </div>
-                        </div>
-
-                        {/* Divider Line */}
-                        <div style={{ width: '100%', height: '0.5px', backgroundColor: '#AC7F5E', marginBottom: '16px' }} />
-                        
-                        {/* Route Visualization */}
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                            
-                            {/* Vertical Line */}
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
-                                <div style={{ width: '2px', height: '20px', backgroundColor: '#0088FF' }} />
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
-                                <div style={{ width: '2px', height: '20px', backgroundColor: '#0088FF' }} />
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
-                                <div style={{ width: '2px', height: '22px', backgroundColor: '#0088FF' }} />
-                                <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
-                            </div>
-                            
-                            {/* Text Content */}
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '12px', color: '#6C757D', marginTop: '-2px',marginBottom: '13px' }}>
-                                    Shola Market Bus Stop
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '14px' }}>
-                                    SMK Khai Lan
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '14px' }}>
-                                    Chevrolet Hospital
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '10px' }}>
-                                    {activeTripRoute?.station || 'Meskel Square Station'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Stop Button */}
-                <button
-                    onClick={() => navigate('/Home')}
-                    style={{
-                        width: '100%',
-                        marginTop: '20px',
-                        backgroundColor: '#FF0000',
-                        color: '#FFFFFF',
-                        border: 'none',
+                    {/* Walk Section - Combined Card */}
+                    <div style={{
+                        backgroundColor: '#FFFFFF',
                         borderRadius: '12px',
-                        padding: '16px',
-                        fontSize: '18px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 8px rgba(255,0,0,0.3)'
-                    }}
-                >
-                    STOP
-                </button>
+                        overflow: 'hidden',
+                        marginBottom: '16px'
+                    }}>
+                        {/* Brown Outer Container */}
+                        <div style={{
+                            backgroundColor: '#AC7F5E',
+                            borderRadius: '8px',
+                            padding: '12px 16px',
+                            marginBottom: '12px'
+                        }}>
+                            {/* White Top Section */}
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                padding: '8px 12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#000000',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                borderRadius: '8px',
+                                maxWidth: 'fit-content'
+                            }}>
+                                <span>🚶</span>
+                                <span>Walk 8 mins to</span>
+                            </div>
+                        </div>
+
+                        {/* White Details Section */}
+                        <div style={{ padding: '16px' }}>
+                            <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000', marginBottom: '4px', marginTop: 'px' }}>
+                                Shola Market
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#6C757D', marginBottom: '10px' }}>
+                                680 m left
+                            </div>
+
+                            {/* Divider Line */}
+                            <div style={{ width: '100%', height: '0.5px', backgroundColor: '#AC7F5E', marginBottom: '16px' }} />
+
+                            {/* Route Visualization */}
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+
+                                {/* Vertical Line */}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{ width: '2px', height: '10px', backgroundColor: '#CED4DA' }} />
+                                    <div style={{ width: '8px', height: '8px', backgroundColor: '#CED4DA', borderRadius: '50%' }} />
+                                    <div style={{ width: '2px', height: '20px', backgroundColor: '#CED4DA' }} />
+                                    <div style={{ width: '8px', height: '8px', backgroundColor: '#CED4DA', borderRadius: '50%' }} />
+                                </div>
+
+                                {/* Text Content */}
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '12px', color: '#6C757D', marginTop: '10px', marginBottom: '10px' }}>
+                                        Start from Cherry Residence
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#6C757D' }}>
+                                        Turn Right onto Jalan Cherry 2
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Wait For Section - Combined Card */}
+                    <div style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        marginBottom: '16px'
+                    }}>
+                        {/* Brown Outer Container */}
+                        <div style={{
+                            backgroundColor: '#AC7F5E',
+                            borderRadius: '8px',
+                            padding: '12px 16px',
+                        }}>
+                            {/* White Top Section */}
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                padding: '8px 12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#000000',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                borderRadius: '8px',
+                                maxWidth: 'fit-content'
+                            }}>
+                                <span>🚌</span>
+                                <span>Wait for S210 Bus</span>
+                            </div>
+                        </div>
+
+                        {/* White Details Section */}
+                        <div style={{ padding: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                                <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000' }}>
+                                    S210 - Shola Market Bus Stop
+                                </div>
+                                <div style={{
+                                    backgroundColor: '#E1E1E1',
+                                    border: '1px solid #000000',
+                                    color: '#000000',
+                                    padding: '4px 12px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '600'
+                                }}>
+                                    8 mins
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <div style={{ fontSize: '13px', color: '#6C757D' }}>
+                                    600 m left
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#000000', fontWeight: '600' }}>
+                                    15, 40 mins
+                                </div>
+                            </div>
+
+                            {/* Divider Line */}
+                            <div style={{ width: '100%', height: '0.5px', backgroundColor: '#AC7F5E', marginBottom: '16px' }} />
+
+                            {/* Route Visualization */}
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+
+                                {/* Vertical Line */}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
+                                    <div style={{ width: '2px', height: '20px', backgroundColor: '#0088FF' }} />
+                                    <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
+                                    <div style={{ width: '2px', height: '20px', backgroundColor: '#0088FF' }} />
+                                    <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
+                                    <div style={{ width: '2px', height: '22px', backgroundColor: '#0088FF' }} />
+                                    <div style={{ width: '8px', height: '8px', backgroundColor: '#0088FF', borderRadius: '50%' }} />
+                                </div>
+
+                                {/* Text Content */}
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '12px', color: '#6C757D', marginTop: '-2px', marginBottom: '13px' }}>
+                                        Shola Market Bus Stop
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '14px' }}>
+                                        SMK Khai Lan
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '14px' }}>
+                                        Chevrolet Hospital
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#6C757D', marginBottom: '10px' }}>
+                                        {activeTripRoute?.station || 'Meskel Square Station'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stop Button */}
+                    <button
+                        onClick={() => navigate('/Home')}
+                        style={{
+                            width: '100%',
+                            marginTop: '20px',
+                            backgroundColor: '#FF0000',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 8px rgba(255,0,0,0.3)'
+                        }}
+                    >
+                        STOP
+                    </button>
                 </div>
             </div>
         </div>

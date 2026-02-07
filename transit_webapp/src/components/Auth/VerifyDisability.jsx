@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Mic, EyeOff, Ear, MessageSquareOff, EarOff } from 'lucide-react';
+import { X, Mic, EyeOff, MessageSquareOff, EarOff } from 'lucide-react';
+
 
 const VerifyDisability = ({ isOpen, onClose }) => {
     const [step, setStep] = React.useState('VERIFY'); // VERIFY, SARA_INTRO, USER_SPEAKING, SARA_DESTINATION
