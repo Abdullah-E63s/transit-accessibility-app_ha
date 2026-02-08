@@ -5,7 +5,8 @@ import OSRMMap from '../Map/OSRMMap';
 
 const JourneyDetails = () => {
     const navigate = useNavigate();
-    const [departureTime, setDepartureTime] = useState('8:00 PM');
+    const [departureTime] = useState('8:00 PM');
+
     const [minuteAdjustment, setMinuteAdjustment] = useState(15);
     const [selectedRoute, setSelectedRoute] = useState(null);
 
@@ -41,7 +42,7 @@ const JourneyDetails = () => {
                 bottom: 0,
                 zIndex: 0
             }}>
-                <OSRMMap 
+                <OSRMMap
                     center={[3.1390, 101.6869]} // Kuala Lumpur
                     zoom={13}
                     markers={[
@@ -70,7 +71,7 @@ const JourneyDetails = () => {
                                 ]
                             }
                         }
-                    ]}  
+                    ]}
                 />
             </div>
 
@@ -79,7 +80,7 @@ const JourneyDetails = () => {
                 {/* Left */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate(-1)}>
+                        onClick={() => navigate(-1)}>
                         <ArrowLeft size={24} color="#343A40" />
                     </button>
                 </div>
@@ -89,7 +90,7 @@ const JourneyDetails = () => {
                 {/* Right */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button className="icon-btn-ghost"
-                    onClick={() => navigate('/notifications')}>
+                        onClick={() => navigate('/notifications')}>
                         <Bell size={24} color="#343A40" />
                     </button>
                 </div>
@@ -347,31 +348,31 @@ const JourneyDetails = () => {
 
                     {/* Step 3 */}
                     <div style={{ display: 'flex', gap: '12px' }}>
-                                            <div style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '50%',
-                                                backgroundColor: '#00C853',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontSize: '20px',
-                                                flexShrink: 0
-                                            }}>
-                                                ✓
-                                            </div>
-                                            <div style={{ flex: 1, paddingTop: '8px' }}>
-                                                <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
-                                                    Arrive at {selectedRoute?.station || 'Meskel Square Station'}
-                                                </div>
-                                                <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
-                                                    8:50PM
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: '#00C853',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '20px',
+                            flexShrink: 0
+                        }}>
+                            ✓
+                        </div>
+                        <div style={{ flex: 1, paddingTop: '8px' }}>
+                            <div style={{ fontSize: '15px', fontWeight: '600', color: '#FFFFFF', marginBottom: '4px' }}>
+                                Arrive at {selectedRoute?.station || 'Meskel Square Station'}
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#FFFFFF', opacity: 0.8 }}>
+                                8:50PM
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                    {/* Start Trip Button */}
+                {/* Start Trip Button */}
                 <button
                     onClick={() => {
                         // Pass the route data to ActiveTrip

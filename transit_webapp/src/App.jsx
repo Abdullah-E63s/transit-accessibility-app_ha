@@ -10,6 +10,7 @@ import VerifyDisability from './components/Auth/VerifyDisability';
 // Dashboard Components
 import Home from './components/Dashboard/Home';
 import SearchRoute from './components/Dashboard/SearchRoute';
+import Games from './components/Dashboard/Games';
 
 // Transit Components
 import TransitSearch from './components/Transit/TransitSearch';
@@ -27,7 +28,10 @@ import MyTrips from './components/Trips/MyTrips';
 
 // Navigation Components
 import BottomNav from './components/Navigation/BottomNav';
-import DisabilityFAB from './components/Navigation/DisabilityFAB';
+
+// Voice Assistant Component
+import VoiceAssistant from './components/VoiceAssistant/VoiceAssistant';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children, isLoggedIn }) => {
@@ -136,15 +140,19 @@ function App() {
                     } />
                     <Route path="/games" element={
                         <ProtectedRoute isLoggedIn={isLoggedIn}>
-                            <div className="screen" style={{ padding: '40px 24px' }}>
-                                <h1>Games</h1>
-                                <p>Gamification features coming soon!</p>
-                            </div>
+                            <Games />
+                        </ProtectedRoute>
+                    } />
+                    
+                    {/* Voice Assistant Route for Blind Mode (Protected) */}
+                    <Route path="/voice-assistant" element={
+                        <ProtectedRoute isLoggedIn={isLoggedIn}>
+                            <VoiceAssistant />
                         </ProtectedRoute>
                     } />
                 </Routes>
 
-                {/* Show Bottom Nav and Sidebar only if logged in and not on auth pages */}
+                {/* Show Bottom Nav only if logged in and not on auth pages */}
                 {isLoggedIn && !['/login', '/register'].includes(window.location.pathname) && (
                     <>
                         {/* Fixed Bottom Nav Container */}

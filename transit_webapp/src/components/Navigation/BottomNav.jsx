@@ -3,6 +3,13 @@ import { NavLink } from 'react-router-dom';
 import { Home, Map, Gamepad2, User, Accessibility } from 'lucide-react';
 
 const BottomNav = ({ onDisabilityClick }) => {
+    // Handle disability button click with the same logic as DisabilityFAB
+    const handleDisabilityClick = () => {
+        if (onDisabilityClick) {
+            onDisabilityClick();
+        }
+    };
+
     return (
         <div className="bottom-nav" style={{ position: 'relative' }}>
             <NavLink to="/home" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -13,9 +20,9 @@ const BottomNav = ({ onDisabilityClick }) => {
                 <Map size={24} />
                 <span>My Trips</span>
             </NavLink>
-            
-            {/* Floating Disability Mode Button */}
-            <button 
+
+            {/* Floating Disability Mode Button with enhanced functionality */}
+            <button
                 className="disability-mode-button"
                 style={{
                     position: 'absolute',
@@ -33,12 +40,15 @@ const BottomNav = ({ onDisabilityClick }) => {
                     boxShadow: '0 4px 12px rgba(255, 0, 0, 0.4)',
                     cursor: 'pointer',
                     zIndex: 9999,
+                    overlay: 'visible',
                 }}
-                onClick={onDisabilityClick}
+                onClick={handleDisabilityClick}
+                aria-label="Open disability assistance options"
+                title="Accessibility Options - Click for disability assistance including voice navigation for blind users"
             >
                 <Accessibility size={32} color="#FFFFFF" />
             </button>
-            
+
             <NavLink to="/disability" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <Map size={24} />
                 <span>Disability</span>
