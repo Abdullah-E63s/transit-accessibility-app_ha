@@ -298,7 +298,7 @@ const Games = () => {
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                         <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>Badges</h3>
-                        <span style={{ fontSize: '14px', color: '#666' }}>8 earned</span>
+                        <span style={{ fontSize: '14px', color: '#666' }}>4 earned</span>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>

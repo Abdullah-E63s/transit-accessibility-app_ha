@@ -552,6 +552,10 @@ const VoiceAssistant = () => {
                   <p style={{ margin: '1px 0' }}>• "I want to go from Union Station to CN Tower"</p>
                   <p style={{ margin: '1px 0' }}>• "I want to check my profile details"</p>
                   <p style={{ margin: '1px 0' }}>• "I want to check my notifications"</p>
+                  <p style={{ margin: '1px 0' }}>• "Can I see my past trips?"</p>
+                  <p style={{ margin: '1px 0' }}>• "I want to play games"</p>
+                  <p style={{ margin: '1px 0' }}>• "Play CO2 clicker" or "Play trivia"</p>
+                  <p style={{ margin: '1px 0' }}>• "Check my badges" or "Tap" during games</p>
                   <p style={{ margin: '1px 0' }}>• "I want to change my system language"</p>
                   <p style={{ margin: '1px 0' }}>• "Thank you" to end conversations</p>
                 </div>

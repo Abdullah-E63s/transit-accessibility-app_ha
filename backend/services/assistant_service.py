@@ -145,6 +145,49 @@ trip_data = {
     ]
 }
 
+# Mock games data
+games_data = {
+    'total_points': 1247,
+    'day_streak': 7,
+    'badges_earned': 8,
+    'badges_total': 10,
+    'badges': [
+        {'id': 1, 'name': 'First Journey', 'icon': '🚌', 'earned': True, 'description': 'Completed your first eco trip'},
+        {'id': 2, 'name': 'Week Warrior', 'icon': '🔥', 'earned': True, 'description': 'Maintained a 7-day streak'},
+        {'id': 3, 'name': 'Bike Champion', 'icon': '🚲', 'earned': True, 'description': 'Used cycling transport'},
+        {'id': 4, 'name': 'Tree Saver', 'icon': '🌳', 'earned': True, 'description': 'Saved significant CO2'},
+        {'id': 5, 'name': 'Metro Master', 'icon': '🚇', 'earned': False, 'description': 'Use metro transport more'},
+        {'id': 6, 'name': 'Eco Hero', 'icon': '⭐', 'earned': False, 'description': 'Reach advanced environmental goals'}
+    ],
+    'weekly_progress': [10, 14, 12, 15],
+    'active_challenges': [
+        {
+            'id': 1,
+            'name': 'Cycle to work',
+            'description': 'Complete 3 more bike rides',
+            'progress': '2/5',
+            'reward': 500
+        }
+    ],
+    'trivia_questions': [
+        {
+            'question': 'Which mode of transport has the lowest CO2 emissions per passenger?',
+            'options': ['Private Car', 'Electric Bus', 'Metro/Train', 'Walking'],
+            'correct': 3
+        },
+        {
+            'question': 'How much CO2 does a typical tree absorb per year?',
+            'options': ['5 kilograms', '22 kilograms', '100 kilograms', '50 kilograms'],
+            'correct': 1
+        },
+        {
+            'question': 'What percentage of global emissions come from transport?',
+            'options': ['Around 10%', 'Around 16%', 'Around 25%', 'Around 40%'],
+            'correct': 1
+        }
+    ]
+}
+
 async def process_assistant_query(text: str, openai_client=None) -> Dict[str, Any]:
     """Process natural language transit query with Sara conversation flow."""
     
@@ -171,6 +214,9 @@ async def process_assistant_query(text: str, openai_client=None) -> Dict[str, An
         # Check if user wants to check trips
         elif any(phrase in user_input for phrase in ['trips', 'my trips', 'past trips', 'carbon', 'co2', 'savings', 'see my past trips', 'carbon saved']):
             return handle_trips_request()
+        # Check if user wants to play games or check eco coach
+        elif any(phrase in user_input for phrase in ['games', 'play games', 'eco coach', 'gaming', 'game', 'play game', 'eco coach progress']):
+            return handle_games_request()
         else:
             return handle_destination_request(text)
     elif state == "profile_display":
@@ -187,6 +233,18 @@ async def process_assistant_query(text: str, openai_client=None) -> Dict[str, An
         return handle_language_selection(text)
     elif state == "showing_trips":
         return handle_trips_response(text)
+    elif state == "games_menu":
+        return handle_games_menu_selection(text)
+    elif state == "playing_co2_clicker":
+        return handle_co2_clicker_game(text)
+    elif state == "playing_trivia":
+        return handle_trivia_game(text)
+    elif state == "showing_badges":
+        return handle_badges_response(text)
+    elif state == "showing_progress":
+        return handle_progress_response(text)
+    elif state == "showing_challenges":
+        return handle_challenges_response(text)
     elif state == "awaiting_transport":
         return handle_transport_selection(text)
     elif state == "awaiting_preferences":
@@ -837,4 +895,265 @@ def handle_trips_response(text: str) -> Dict[str, Any]:
         return {
             "response": "Would you like to see more trips by saying 'next trip' or say 'thank you' when you're done?",
             "data": {"state": "showing_trips"}
+        }
+
+def handle_games_request() -> Dict[str, Any]:
+    """Handle user's request to access games and eco coach."""
+    conversation_states["current_state"] = "games_menu"
+    
+    response = f"""Welcome to Eco Coach! Here are your current stats...
+
+You have {games_data['total_points']} total points and a {games_data['day_streak']}-day streak! 🔥
+
+You have earned {games_data['badges_earned']} badges so far.
+
+You have 2 playable games available:
+- CO2 Clicker: Offset emissions by voice
+- Eco Trivia: Test your environmental knowledge
+
+You also have an active challenge: {games_data['active_challenges'][0]['name']} - you've completed {games_data['active_challenges'][0]['progress']} for {games_data['active_challenges'][0]['reward']} bonus points.
+
+What would you like to do? You can say 'play CO2 clicker', 'play trivia', 'check my badges', 'check weekly progress', or 'check challenges'."""
+    
+    return {
+        "response": response,
+        "data": {"state": "games_menu", "games_data": games_data}
+    }
+
+def handle_games_menu_selection(text: str) -> Dict[str, Any]:
+    """Handle user's selection from games menu."""
+    user_input = text.lower().strip()
+    
+    if any(phrase in user_input for phrase in ['co2 clicker', 'clicker', 'play co2', 'play clicker']):
+        conversation_states["current_state"] = "playing_co2_clicker"
+        conversation_states["co2_saved_game"] = 0
+        
+        response = "Starting CO2 Clicker! Say 'tap' to offset 1 gram of CO2 emissions. Let's see how much you can save! Say 'stop' when you're done playing."
+        
+        return {
+            "response": response,
+            "data": {"state": "playing_co2_clicker", "co2_saved": 0}
+        }
+    elif any(phrase in user_input for phrase in ['trivia', 'play trivia', 'eco trivia', 'quiz']):
+        conversation_states["current_state"] = "playing_trivia"
+        conversation_states["trivia_question"] = 0
+        conversation_states["trivia_score"] = 0
+        
+        first_question = games_data['trivia_questions'][0]
+        response = f"""Starting Eco Trivia! I'll ask you 3 environmental questions. Here's question 1 of 3:
+
+{first_question['question']}
+A) {first_question['options'][0]}
+B) {first_question['options'][1]}
+C) {first_question['options'][2]}
+D) {first_question['options'][3]}
+
+Say the letter A, B, C, or D, or say the full answer."""
+        
+        return {
+            "response": response,
+            "data": {"state": "playing_trivia", "question": 0, "score": 0}
+        }
+    elif any(phrase in user_input for phrase in ['badges', 'check badges', 'my badges']):
+        conversation_states["current_state"] = "showing_badges"
+        
+        earned_badges = [badge for badge in games_data['badges'] if badge['earned']]
+        unearned_badges = [badge for badge in games_data['badges'] if not badge['earned']]
+        
+        response = f"You have earned {len(earned_badges)} badges out of {len(games_data['badges'])}:\n\n✅ Completed badges:\n"
+        for badge in earned_badges[:4]:  # Show first 4 earned
+            response += f"- {badge['name']}: {badge['description']}\n"
+        
+        if len(earned_badges) > 4:
+            response += f"- And {len(earned_badges) - 4} more completed badges\n"
+        
+        response += "\n🔒 Still to unlock:\n"
+        for badge in unearned_badges:
+            response += f"- {badge['name']}: {badge['description']}\n"
+        
+        response += "\nKeep up the great work to unlock the remaining badges!"
+        
+        return {
+            "response": response,
+            "data": {"state": "showing_badges"}
+        }
+    elif any(phrase in user_input for phrase in ['progress', 'weekly progress', 'check progress']):
+        conversation_states["current_state"] = "showing_progress"
+        
+        response = f"""Here's your 4-week streak progress:
+
+Week 1: {games_data['weekly_progress'][0]} active days
+Week 2: {games_data['weekly_progress'][1]} active days
+Week 3: {games_data['weekly_progress'][2]} active days
+Week 4: {games_data['weekly_progress'][3]} active days - your best week so far!
+
+You're showing excellent consistency in your eco-friendly habits. Blue bars represent your streak days!"""
+        
+        return {
+            "response": response,
+            "data": {"state": "showing_progress"}
+        }
+    elif any(phrase in user_input for phrase in ['challenges', 'check challenges', 'active challenges']):
+        conversation_states["current_state"] = "showing_challenges"
+        
+        challenge = games_data['active_challenges'][0]
+        response = f"""You have 1 active challenge:
+
+{challenge['name']} challenge: {challenge['description']} to finish this challenge. You've completed {challenge['progress']} total rides.
+
+Reward: {challenge['reward']} bonus points when completed.
+
+Keep cycling to work to complete this challenge and earn your bonus points!"""
+        
+        return {
+            "response": response,
+            "data": {"state": "showing_challenges"}
+        }
+    else:
+        return {
+            "response": "You can say 'play CO2 clicker', 'play trivia', 'check my badges', 'check weekly progress', or 'check challenges'. What would you like to do?",
+            "data": {"state": "games_menu"}
+        }
+
+def handle_co2_clicker_game(text: str) -> Dict[str, Any]:
+    """Handle CO2 clicker game interactions."""
+    user_input = text.lower().strip()
+    current_saved = conversation_states.get("co2_saved_game", 0)
+    
+    if any(phrase in user_input for phrase in ['tap', 'click', 'offset']):
+        # Count how many "tap" commands in the input
+        tap_count = user_input.count('tap') + user_input.count('click') + user_input.count('offset')
+        if tap_count == 0:
+            tap_count = 1
+        
+        new_saved = current_saved + tap_count
+        conversation_states["co2_saved_game"] = new_saved
+        
+        if new_saved <= 5:
+            response = f"Excellent! You've saved {new_saved} grams of CO2! Keep going! Say 'tap' to continue or 'stop' to finish."
+        else:
+            response = f"Fantastic! You've saved {new_saved} grams of CO2 total! Well done on offsetting emissions. Say 'tap' to keep playing or 'stop' to return to games menu."
+        
+        return {
+            "response": response,
+            "data": {"state": "playing_co2_clicker", "co2_saved": new_saved}
+        }
+    elif any(phrase in user_input for phrase in ['stop', 'finish', 'done', 'quit']):
+        total_saved = conversation_states.get("co2_saved_game", 0)
+        conversation_states["current_state"] = "games_menu"
+        conversation_states.pop("co2_saved_game", None)
+        
+        response = f"Great gaming session! You saved {total_saved} grams of CO2. Returning to Eco Coach menu..."
+        
+        return {
+            "response": response,
+            "data": {"state": "games_menu"}
+        }
+    else:
+        return {
+            "response": "Say 'tap' to offset CO2 or 'stop' to finish the game.",
+            "data": {"state": "playing_co2_clicker"}
+        }
+
+def handle_trivia_game(text: str) -> Dict[str, Any]:
+    """Handle trivia game interactions."""
+    user_input = text.lower().strip()
+    current_question = conversation_states.get("trivia_question", 0)
+    current_score = conversation_states.get("trivia_score", 0)
+    
+    questions = games_data['trivia_questions']
+    
+    if current_question >= len(questions):
+        # Game finished
+        conversation_states["current_state"] = "games_menu"
+        conversation_states.pop("trivia_question", None)
+        conversation_states.pop("trivia_score", None)
+        
+        response = f"Perfect! You got all {len(questions)} questions right! Score: {current_score} out of {len(questions)}. You're an eco knowledge champion! 🏆 Returning to games menu..."
+        
+        return {
+            "response": response,
+            "data": {"state": "games_menu"}
+        }
+    
+    # Check answer
+    question = questions[current_question]
+    correct_answer = question['correct']
+    
+    user_answered_correct = False
+    if user_input in ['a', 'b', 'c', 'd']:
+        answer_index = ord(user_input) - ord('a')
+        user_answered_correct = answer_index == correct_answer
+    else:
+        # Check if user said the full answer
+        correct_option = question['options'][correct_answer].lower()
+        user_answered_correct = correct_option in user_input
+    
+    # Update score
+    new_score = current_score + (1 if user_answered_correct else 0)
+    conversation_states["trivia_score"] = new_score
+    
+    # Move to next question
+    next_question = current_question + 1
+    conversation_states["trivia_question"] = next_question
+    
+    if user_answered_correct:
+        response = "Correct! "
+    else:
+        response = f"The correct answer was {question['options'][correct_answer]}. "
+    
+    if next_question < len(questions):
+        # Next question
+        next_q = questions[next_question]
+        response += f"Question {next_question + 1} of {len(questions)}:\n\n{next_q['question']}\nA) {next_q['options'][0]}\nB) {next_q['options'][1]}\nC) {next_q['options'][2]}\nD) {next_q['options'][3]}"
+    else:
+        # Game finished
+        conversation_states["current_state"] = "games_menu"
+        response += f"Game complete! Final Score: {new_score} out of {len(questions)}. "
+        if new_score == len(questions):
+            response += "Perfect score! You're an eco knowledge champion! 🏆"
+        elif new_score >= len(questions) * 0.7:
+            response += "Great job! You know your environmental facts!"
+        else:
+            response += "Good effort! Keep learning about environmental topics!"
+        response += " Returning to games menu..."
+    
+    return {
+        "response": response,
+        "data": {"state": "playing_trivia" if next_question < len(questions) else "games_menu"}
+    }
+
+def handle_badges_response(text: str) -> Dict[str, Any]:
+    """Handle response after showing badges."""
+    return handle_generic_games_response(text)
+
+def handle_progress_response(text: str) -> Dict[str, Any]:
+    """Handle response after showing progress."""
+    return handle_generic_games_response(text)
+
+def handle_challenges_response(text: str) -> Dict[str, Any]:
+    """Handle response after showing challenges."""
+    return handle_generic_games_response(text)
+
+def handle_generic_games_response(text: str) -> Dict[str, Any]:
+    """Handle generic responses for games sections."""
+    user_input = text.lower().strip()
+    
+    if any(phrase in user_input for phrase in ['thank you', 'thanks', 'okay thank you', 'ok thank you', 'okay', 'done']):
+        conversation_states["current_state"] = "intro"
+        
+        response = "You're welcome! Keep up the fantastic eco-friendly gaming. You're making a real difference for the environment! Returning to main menu..."
+        
+        return {
+            "response": response,
+            "data": {"state": "conversation_ended"}
+        }
+    else:
+        conversation_states["current_state"] = "games_menu"
+        
+        response = "Would you like to try something else? You can say 'play CO2 clicker', 'play trivia', 'check my badges', 'check weekly progress', or 'check challenges'."
+        
+        return {
+            "response": response,
+            "data": {"state": "games_menu"}
         }
