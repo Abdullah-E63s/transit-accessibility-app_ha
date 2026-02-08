@@ -550,13 +550,10 @@ const VoiceAssistant = () => {
                 <p className="ai-text-line" style={{ fontSize: '11px', margin: '2px 0' }}>Sara's Voice Commands:</p>
                 <div className="ai-info-box" style={{ fontSize: '9px', padding: '6px' }}>
                   <p style={{ margin: '1px 0' }}>• "I want to go from Union Station to CN Tower"</p>
-                  <p style={{ margin: '1px 0' }}>• Say "Bus", "Train", or "MRT/LRT" for transport</p>
-                  <p style={{ margin: '1px 0' }}>• "I'm at the bus stop"</p>
-                  <p style={{ margin: '1px 0' }}>• "The bus is here"</p>
-                  <p style={{ margin: '1px 0' }}>• "Where am I ?"</p>
-                  <p style={{ margin: '1px 0' }}>• "I got off the bus"</p>
-                  <p style={{ margin: '1px 0' }}>• "Where am I ?"</p>
-                  <p style={{ margin: '1px 0' }}>• "Thank you, end journey"</p>
+                  <p style={{ margin: '1px 0' }}>• "I want to check my profile details"</p>
+                  <p style={{ margin: '1px 0' }}>• "I want to check my notifications"</p>
+                  <p style={{ margin: '1px 0' }}>• "I want to change my system language"</p>
+                  <p style={{ margin: '1px 0' }}>• "Thank you" to end conversations</p>
                 </div>
               </div>
             </div>
