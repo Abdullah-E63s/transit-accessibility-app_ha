@@ -8,24 +8,23 @@ import './VoiceAssistant.css';
  */
 const VoiceAssistant = () => {
   const navigate = useNavigate();
-  
+
   // Conversation states: IDLE → LISTENING → GUIDING
   const [conversationState, setConversationState] = useState('IDLE');
-  
+
   // Speech recognition states
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastUserSpeech, setLastUserSpeech] = useState('');
-  
+
   // Text-to-speech states
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastResponse, setLastResponse] = useState('');
   const [isCompletingJourney, setIsCompletingJourney] = useState(false);
-  
+
   // Route data storage for navigation
   const [routeData, setRouteData] = useState(null);
-  const [currentInstruction, setCurrentInstruction] = useState('');
-  
+
   // Refs for speech APIs
   const recognitionRef = useRef(null);
   const synthRef = useRef(null);
@@ -36,17 +35,17 @@ const VoiceAssistant = () => {
   useEffect(() => {
     let fallbackTimer = null;
     let loadVoices = null;
-    
+
     // Load voices for speech synthesis (needed for female voice selection)
     if ('speechSynthesis' in window) {
       loadVoices = () => {
         const voices = window.speechSynthesis.getVoices();
         console.log('Available voices:', voices.map(v => v.name));
       };
-      
+
       // Load voices immediately if available
       loadVoices();
-      
+
       // Also listen for voices changed event (some browsers need this)
       window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
     }
@@ -58,7 +57,7 @@ const VoiceAssistant = () => {
         console.log('🎤 Testing Sara speech immediately...');
         speakResponse("Hello, this is Sara testing voice synthesis. Can you hear me?");
       }, 500);
-      
+
       setTimeout(() => {
         initializeSaraConversation();
       }, 2000); // Small delay to ensure component is mounted
@@ -77,7 +76,7 @@ const VoiceAssistant = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
-      
+
       // Configure speech recognition
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
@@ -126,7 +125,8 @@ const VoiceAssistant = () => {
         clearTimeout(fallbackTimer);
       }
     };
-  }, []);  // Remove conversationState dependency to prevent loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  // Dependencies intentionally minimal to prevent loops
 
   /**
    * Initialize Sara conversation with introduction
@@ -161,7 +161,7 @@ const VoiceAssistant = () => {
    */
   const handleUserSpeech = async (text) => {
     setIsProcessing(true);
-    
+
     try {
       // Send all speech to backend for Sara to handle conversation flow
       await sendToBackend(text);
@@ -169,7 +169,7 @@ const VoiceAssistant = () => {
       console.error('Error processing speech:', error);
       speakResponse("I'm sorry, I had trouble processing that. Please try again.");
     }
-    
+
     setIsProcessing(false);
   };
 
@@ -192,12 +192,11 @@ const VoiceAssistant = () => {
 
       const data = await response.json();
       console.log('📥 Backend response received:', data);
-      
+
       // Handle the response
       if (data.response) {
         console.log('✅ Setting Sara response:', data.response);
         setLastResponse(data.response);
-        setCurrentInstruction(data.response);
         speakResponse(data.response);
       } else {
         console.warn('⚠️ No response field in backend data');
@@ -214,8 +213,8 @@ const VoiceAssistant = () => {
       // Update conversation state based on backend response
       if (data.data && data.data.state) {
         console.log('🔄 Updating conversation state:', data.data.state);
-        if (data.data.state === 'journey_active' || data.data.state === 'at_bus_stop' || 
-            data.data.state === 'on_bus' || data.data.state === 'walking_to_destination') {
+        if (data.data.state === 'journey_active' || data.data.state === 'at_bus_stop' ||
+          data.data.state === 'on_bus' || data.data.state === 'walking_to_destination') {
           setConversationState('GUIDING');
         } else if (data.data.state === 'completed') {
           // Journey completed - flag that we're completing and wait for speech to finish
@@ -230,7 +229,7 @@ const VoiceAssistant = () => {
     } catch (error) {
       console.error('❌ Backend communication error:', error);
       let errorMsg = "Sorry, I'm having trouble connecting to the navigation service.";
-      
+
       if (error.message.includes('fetch')) {
         errorMsg += " Please make sure the backend server is running on http://localhost:8000";
       } else if (error.message.includes('status: 500')) {
@@ -238,7 +237,7 @@ const VoiceAssistant = () => {
       } else if (error.message.includes('status: 404')) {
         errorMsg += " The navigation service endpoint was not found.";
       }
-      
+
       speakResponse(errorMsg);
     }
   };
@@ -253,7 +252,7 @@ const VoiceAssistant = () => {
     }
 
     const route = { ...data.route };
-    
+
     // Convert geometry coordinates from [lon, lat] to [lat, lon] for map use
     if (route.geometry.coordinates) {
       route.geometry.coordinates = route.geometry.coordinates.map(coord => {
@@ -279,17 +278,17 @@ const VoiceAssistant = () => {
    */
   const speakResponse = (text) => {
     console.log('🎤 Sara attempting to speak:', text);
-    
+
     if ('speechSynthesis' in window && text) {
       // Cancel any ongoing speech
       window.speechSynthesis.cancel();
-      
+
       const utterance = new SpeechSynthesisUtterance(text);
-      
+
       // Attempt to find and use a female voice
       const voices = window.speechSynthesis.getVoices();
       console.log('Available voices:', voices.length);
-      
+
       const femaleVoice = voices.find(v =>
         v.name.includes('Female') ||
         v.name.includes('Google US English') ||
@@ -306,22 +305,22 @@ const VoiceAssistant = () => {
       } else {
         console.log('⚠️ No female voice found, using default voice');
       }
-      
+
       // Configure voice settings for better accessibility with female tone
       utterance.rate = 0.8; // Slightly slower for clarity
       utterance.pitch = 1.2; // Higher pitch for more feminine tone
       utterance.volume = 1.0;
-      
+
       // Handle speech events
       utterance.onstart = () => {
         console.log('✅ Sara started speaking');
         setIsSpeaking(true);
       };
-      
+
       utterance.onend = () => {
         console.log('✅ Sara finished speaking');
         setIsSpeaking(false);
-        
+
         // Check if we just finished speaking the journey completion message
         if (isCompletingJourney) {
           console.log('🔄 Journey completion message finished - resetting Sara...');
@@ -329,7 +328,6 @@ const VoiceAssistant = () => {
           // Wait a moment before resetting to let the user process
           setTimeout(() => {
             setLastResponse('');
-            setCurrentInstruction('');
             // Trigger Sara's initial greeting again
             setTimeout(() => {
               initializeSaraConversation();
@@ -337,25 +335,24 @@ const VoiceAssistant = () => {
           }, 1500);
         }
       };
-      
+
       utterance.onerror = (event) => {
         console.error('❌ Speech synthesis error:', event.error);
         setIsSpeaking(false);
-        
+
         // Also handle error case for journey completion
         if (isCompletingJourney) {
           console.log('⚠️ Speech error during journey completion - still resetting...');
           setIsCompletingJourney(false);
           setTimeout(() => {
             setLastResponse('');
-            setCurrentInstruction('');
             setTimeout(() => {
               initializeSaraConversation();
             }, 1000);
           }, 1500);
         }
       };
-      
+
       // Speak the text
       console.log('🗣️ Starting speech synthesis...');
       window.speechSynthesis.speak(utterance);
@@ -375,7 +372,7 @@ const VoiceAssistant = () => {
     if (isSpeaking) return 'Speaking...';
     if (isProcessing) return 'Processing...';
     if (isListening) return 'Listening...';
-    
+
     switch (conversationState) {
       case 'LISTENING':
         return 'Listening for your request...';
@@ -387,39 +384,29 @@ const VoiceAssistant = () => {
     }
   };
 
-  /**
-   * Get appropriate button color based on state
-   */
-  const getButtonClass = () => {
-    let classes = 'speak-button';
-    if (isListening) classes += ' listening';
-    if (isProcessing) classes += ' processing';
-    if (isSpeaking) classes += ' speaking';
-    if (conversationState === 'GUIDING') classes += ' guiding';
-    return classes;
-  };
+
 
   /**
    * Handle close button - stop speech and exit blind mode
    */
   const handleCloseAndExit = () => {
     console.log('🚪 Closing voice assistant - stopping all speech...');
-    
+
     // Stop any ongoing speech immediately
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       console.log('🔇 Speech synthesis stopped');
     }
-    
+
     // Reset TTS state
     setIsSpeaking(false);
-    
+
     // Stop speech recognition if active
     if (recognitionRef.current && isListening) {
       recognitionRef.current.stop();
       console.log('🎤 Speech recognition stopped');
     }
-    
+
     // Navigate back to main app
     navigate('/');
   };
@@ -427,11 +414,11 @@ const VoiceAssistant = () => {
   return (
     <div className="modal-overlay ai-voice-overlay glass-mode" onClick={(e) => e.stopPropagation()}>
       <div className="modal-content verify-disability-modal ai-modal" onClick={(e) => e.stopPropagation()}>
-        
+
         {/* Close button to return to main app */}
         <button className="modal-close-btn" onClick={handleCloseAndExit}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
           </svg>
         </button>
 
@@ -497,10 +484,10 @@ const VoiceAssistant = () => {
 
           {/* Single Main Microphone Button */}
           <div className="voice-interaction-section" style={{ margin: '-35px 0 -20px 0' }}>
-            <div 
+            <div
               className={`mic-animation-container ${isListening || isSpeaking ? 'active' : ''}`}
               onClick={startListening}
-              style={{ 
+              style={{
                 cursor: (isProcessing || isSpeaking) ? 'not-allowed' : 'pointer',
                 opacity: (isProcessing || isSpeaking) ? 0.7 : 1
               }}
@@ -517,8 +504,8 @@ const VoiceAssistant = () => {
                   <div className="processing-spinner" style={{ width: '24px', height: '24px' }}></div>
                 ) : (
                   <svg width="36" height="36" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
                   </svg>
                 )}
               </div>

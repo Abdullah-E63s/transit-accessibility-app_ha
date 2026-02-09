@@ -24,7 +24,6 @@ const SearchRoute = () => {
     const [showRecommendation, setShowRecommendation] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [selectedStation, setSelectedStation] = useState(null);
     const [selectedLocation, setSelectedLocation] = useState(null); // Store selected location from search
     const [mapCenter, setMapCenter] = useState([3.1390, 101.6869]); // Kuala Lumpur default
     const [fetchedRoutes, setFetchedRoutes] = useState([]); // Routes from backend
@@ -126,7 +125,7 @@ const SearchRoute = () => {
             console.log('Searching for:', query);
             const url = buildURL(API_CONFIG.maps.geocode, { q: query, limit: 5 });
             const response = await fetch(url);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -151,13 +150,13 @@ const SearchRoute = () => {
     // NEW: Handle when user selects a location from search results
     const handleSelectLocation = async (result) => {
         console.log('Selected location:', result);
-        
+
         // Update selected location and map center
         setSelectedLocation(result);
         setMapCenter([parseFloat(result.lat), parseFloat(result.lon)]);
         setSearchQuery(result.display_name);
         setSearchResults([]); // Close dropdown
-        
+
         // Fetch real routes from backend for this location
         await fetchRoutesForLocation(result);
     };
@@ -189,7 +188,7 @@ const SearchRoute = () => {
                 co2Label: 'Save CO₂',
                 badge: getBadgeForScore(route.accessibility_score),
                 tags: getRouteTags(route),
-                envAlert: route.co2_saved_vs_car_kg 
+                envAlert: route.co2_saved_vs_car_kg
                     ? `Saves ${route.co2_saved_vs_car_kg.toFixed(1)}kg CO₂ vs driving!`
                     : 'Eco-friendly transit option'
             }));
@@ -377,7 +376,7 @@ const SearchRoute = () => {
                 zIndex: 0,
                 pointerEvents: 'auto'  // Enable mouse interactions
             }}>
-                <OSRMMap 
+                <OSRMMap
                     center={mapCenter} // Dynamic map center based on search
                     zoom={selectedLocation ? 15 : 13}
                     markers={selectedLocation ? [
@@ -570,7 +569,7 @@ const SearchRoute = () => {
                                 />
                             )}
                         </div>
-                        
+
                         {/* Search Results Dropdown */}
                         {searchResults.length > 0 && (
                             <div style={{
@@ -812,10 +811,10 @@ const SearchRoute = () => {
                         ) : filteredRoutes.length > 0 ? (
                             <>
                                 {selectedLocation && (
-                                    <div style={{ 
-                                        marginBottom: '16px', 
-                                        padding: '12px', 
-                                        backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                                    <div style={{
+                                        marginBottom: '16px',
+                                        padding: '12px',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
                                         borderRadius: '8px',
                                         color: '#FFFFFF',
                                         fontSize: '14px'
@@ -830,7 +829,6 @@ const SearchRoute = () => {
                                             onClick={() => {
                                                 try {
                                                     // Store selected station data for next components
-                                                    setSelectedStation(route);
                                                     localStorage.setItem('selectedRoute', JSON.stringify(route));
                                                     console.log('Selected route:', route);
 

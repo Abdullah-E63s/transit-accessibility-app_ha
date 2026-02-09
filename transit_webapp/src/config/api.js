@@ -1,8 +1,25 @@
 // API Configuration for Transit Accessibility App
 // Centralized configuration for backend API endpoints
 
-// Get API base URL from environment variable or use default
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+// Get API base URL based on environment
+// Production: Use empty string for relative URLs (same domain via Vercel proxy)
+// Development: Use localhost:8000
+const getApiBaseUrl = () => {
+  // If explicitly set via environment variable, use that
+  if (process.env.REACT_APP_API_BASE_URL) {
+    return process.env.REACT_APP_API_BASE_URL;
+  }
+  
+  // In development (localhost), use backend port
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  
+  // In production, use relative URLs (same domain)
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // API endpoints configuration
 export const API_CONFIG = {
