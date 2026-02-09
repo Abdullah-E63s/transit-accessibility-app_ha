@@ -1,9 +1,9 @@
 # Vercel Serverless Function Entrypoint
-# Minimal FastAPI app that works in serverless environment
+# Minimal FastAPI app with Mangum adapter for serverless
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from mangum import Mangum
 
 # Create a minimal FastAPI app
 app = FastAPI(
@@ -71,5 +71,5 @@ async def catch_all_post(full_path: str):
         "message": f"Backend is running. Endpoint /api/{full_path} is available but may require configuration."
     }
 
-# Export the handler for Vercel
-handler = app
+# Mangum adapter - this is what Vercel needs
+handler = Mangum(app)
