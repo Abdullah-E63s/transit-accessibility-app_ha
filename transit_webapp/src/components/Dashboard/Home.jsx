@@ -18,7 +18,6 @@ const Home = () => {
   const [activeFilters, setActiveFilters] = useState(['accessible']);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [routes, setRoutes] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showDisabilityModal, setShowDisabilityModal] = useState(false);
 
   // Fetch routes from backend when component mounts or when search changes
@@ -30,7 +29,7 @@ const Home = () => {
         return;
       }
 
-      setLoading(true);
+
       try {
         // Get user location for carbon intensity
         navigator.geolocation.getCurrentPosition(
@@ -74,7 +73,7 @@ const Home = () => {
         console.error('Failed to fetch routes:', error);
         setRoutes(getDefaultRoutes());
       } finally {
-        setLoading(false);
+        // Loading complete
       }
     };
 
