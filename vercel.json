@@ -2,10 +2,15 @@
     "buildCommand": "cd transit_webapp && npm install && npm run build",
     "outputDirectory": "transit_webapp/build",
     "installCommand": "cd transit_webapp && npm install",
+    "functions": {
+        "api/index.py": {
+            "runtime": "python3.9"
+        }
+    },
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/api/index.py"
+            "destination": "/api/index"
         }
     ],
     "headers": [
