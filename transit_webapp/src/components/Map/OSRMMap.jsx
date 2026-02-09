@@ -60,7 +60,7 @@ const OSRMMap = ({ center = [3.1390, 101.6869], zoom = 13, markers = [], routes 
       const leafletMarker = L.marker([marker.lat, marker.lon])
         .addTo(mapInstanceRef.current)
         .bindPopup(marker.popup || `Lat: ${marker.lat}, Lng: ${marker.lon}`);
-      
+
       // Make markers clickable
       leafletMarker.on('click', () => {
         leafletMarker.openPopup();
@@ -72,13 +72,13 @@ const OSRMMap = ({ center = [3.1390, 101.6869], zoom = 13, markers = [], routes 
       if (route.geometry && route.geometry.coordinates) {
         // OSRM returns [lng, lat] but Leaflet expects [lat, lng]
         const latlngs = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-        const polyline = L.polyline(latlngs, { 
-          color: 'blue', 
-          weight: 4, 
+        const polyline = L.polyline(latlngs, {
+          color: 'blue',
+          weight: 4,
           opacity: 0.7,
           interactive: true
         }).addTo(mapInstanceRef.current);
-        
+
         // Add tooltip to routes
         polyline.bindTooltip(`Distance: ${route.distance_m ? (route.distance_m / 1000).toFixed(1) : 'Unknown'} km`);
       }
@@ -102,14 +102,14 @@ const OSRMMap = ({ center = [3.1390, 101.6869], zoom = 13, markers = [], routes 
   }, []);
 
   return (
-    <div 
-      ref={mapRef} 
-      style={{ 
-        height: '100%', 
+    <div
+      ref={mapRef}
+      style={{
+        height: '100%',
         width: '100%',
-        position: 'relative',
+        position: 'absolute',
         zIndex: 0
-      }} 
+      }}
     />
   );
 };

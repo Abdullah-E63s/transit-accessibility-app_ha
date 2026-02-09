@@ -62,6 +62,5 @@ const CO2Card = () => {
         </div>
     );
 };
-};
 
 export default CO2Card;

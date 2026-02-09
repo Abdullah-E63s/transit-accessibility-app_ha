@@ -33,6 +33,8 @@ import BottomNav from './components/Navigation/BottomNav';
 import VoiceAssistant from './components/VoiceAssistant/VoiceAssistant';
 
 
+
+
 // Protected Route Component
 const ProtectedRoute = ({ children, isLoggedIn }) => {
     const location = useLocation();
@@ -143,7 +145,7 @@ function App() {
                             <Games />
                         </ProtectedRoute>
                     } />
-                    
+
                     {/* Voice Assistant Route for Blind Mode (Protected) */}
                     <Route path="/voice-assistant" element={
                         <ProtectedRoute isLoggedIn={isLoggedIn}>

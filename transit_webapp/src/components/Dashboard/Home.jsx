@@ -1,185 +1,189 @@
 import React, { useState, useEffect } from 'react';
 import WeatherCard from './WeatherCard';
 import CO2Card from './CO2Card';
-import { Bell, MapPin, Menu, Bus, Train, TrainFront, ChevronDown, Star, Search } from 'lucide-react';
+import { Bell, MapPin, Menu, Bus, Train, TrainFront, ChevronDown, Star, Search, EyeOff } from 'lucide-react';
 import RouteCard from '../Transit/RouteCard';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Navigation/Sidebar';
 import OSRMMap from '../Map/OSRMMap';
 import { routeService } from '../../services/routeService';
+import VerifyDisability from '../Auth/VerifyDisability';
+
+
 
 const Home = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [homeSearchQuery, setHomeSearchQuery] = useState('');
-    const [activeTab, setActiveTab] = useState('bus');
-    const [activeFilters, setActiveFilters] = useState(['accessible']);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [routes, setRoutes] = useState([]);
-    const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [homeSearchQuery, setHomeSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('bus');
+  const [activeFilters, setActiveFilters] = useState(['accessible']);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [routes, setRoutes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showDisabilityModal, setShowDisabilityModal] = useState(false);
 
-    // Fetch routes from backend when component mounts or when search changes
-    useEffect(() => {
-        const fetchRoutes = async () => {
-            if (!homeSearchQuery) {
-                // Use default mock routes if no search query
-                setRoutes(getDefaultRoutes());
-                return;
-            }
+  // Fetch routes from backend when component mounts or when search changes
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      if (!homeSearchQuery) {
+        // Use default mock routes if no search query
+        setRoutes(getDefaultRoutes());
+        return;
+      }
 
-            setLoading(true);
-            try {
-                // Get user location for carbon intensity
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const { latitude, longitude } = position.coords;
-                        
-                        const backendRoutes = await routeService.planRoute({
-                            origin: 'Current Location',
-                            destination: homeSearchQuery,
-                            accessibility_priority: 'balanced',
-                            optimize: 'balanced',
-                            lat: latitude,
-                            lon: longitude
-                        });
+      setLoading(true);
+      try {
+        // Get user location for carbon intensity
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
 
-                        // Transform backend routes to match frontend format
-                        const transformedRoutes = backendRoutes.map((route, index) => ({
-                            id: index + 1,
-                            type: route.mode,
-                            recommended: route.accessibility_score > 90,
-                            station: route.destination,
-                            distance: `${(route.estimated_time_minutes * 0.5).toFixed(1)} km`,
-                            duration: `${route.estimated_time_minutes} mins`,
-                            arrivalTime: calculateArrivalTime(route.estimated_time_minutes),
-                            cost: calculateCost(route.mode, route.estimated_time_minutes),
-                            co2: route.estimated_co2_kg ? `${Math.round(route.estimated_co2_kg * 1000)}g` : '0g',
-                            co2Label: 'Save CO₂',
-                            badge: getBadgeForScore(route.accessibility_score),
-                            tags: getRouteTags(route),
-                            envAlert: getEnvAlert(route)
-                        }));
+            const backendRoutes = await routeService.planRoute({
+              origin: 'Current Location',
+              destination: homeSearchQuery,
+              accessibility_priority: 'balanced',
+              optimize: 'balanced',
+              lat: latitude,
+              lon: longitude
+            });
 
-                        setRoutes(transformedRoutes);
-                    },
-                    (error) => {
-                        console.log('Geolocation error:', error);
-                        setRoutes(getDefaultRoutes());
-                    }
-                );
-            } catch (error) {
-                console.error('Failed to fetch routes:', error);
-                setRoutes(getDefaultRoutes());
-            } finally {
-                setLoading(false);
-            }
-        };
+            // Transform backend routes to match frontend format
+            const transformedRoutes = backendRoutes.map((route, index) => ({
+              id: index + 1,
+              type: route.mode,
+              recommended: route.accessibility_score > 90,
+              station: route.destination,
+              distance: `${(route.estimated_time_minutes * 0.5).toFixed(1)} km`,
+              duration: `${route.estimated_time_minutes} mins`,
+              arrivalTime: calculateArrivalTime(route.estimated_time_minutes),
+              cost: calculateCost(route.mode, route.estimated_time_minutes),
+              co2: route.estimated_co2_kg ? `${Math.round(route.estimated_co2_kg * 1000)}g` : '0g',
+              co2Label: 'Save CO₂',
+              badge: getBadgeForScore(route.accessibility_score),
+              tags: getRouteTags(route),
+              envAlert: getEnvAlert(route)
+            }));
 
-        fetchRoutes();
-    }, [homeSearchQuery]);
-
-    // Helper functions
-    const getDefaultRoutes = () => [
-        {
-            id: 1,
-            type: 'bus',
-            recommended: true,
-            station: 'Meskel Square Station',
-            distance: '6.5 km',
-            duration: '25 mins',
-            arrivalTime: '8:50 pm',
-            cost: '$1.80',
-            co2: '320g',
-            co2Label: 'Save CO₂',
-            badge: { type: 'good', text: 'Good' },
-            tags: ['Accessible'],
-            envAlert: 'This route produces 38% less emissions than driving.'
-        },
-        {
-            id: 2,
-            type: 'bus',
-            recommended: false,
-            station: 'Addis Ketema Station',
-            distance: '5.0 km',
-            duration: '40 mins',
-            arrivalTime: '8:30 pm',
-            cost: '$1.50',
-            co2: '200g',
-            co2Label: 'Save CO₂',
-            badge: { type: 'moderate', text: 'Moderate' },
-            tags: ['Accessible'],
-            envAlert: 'Air quality is moderate on this route.'
-        },
-        {
-            id: 3,
-            type: 'train',
-            recommended: true,
-            station: 'Light Rail Station',
-            distance: '7.2 km',
-            duration: '18 mins',
-            arrivalTime: '8:25 pm',
-            cost: '$2.00',
-            co2: '150g',
-            co2Label: 'Save CO₂',
-            badge: { type: 'good', text: 'Good' },
-            tags: ['Accessible', 'Fast'],
-            envAlert: 'Clean electric transport option.'
-        },
-        {
-            id: 4,
-            type: 'mrt',
-            recommended: false,
-            station: 'Metro Line 1',
-            distance: '8.1 km',
-            duration: '22 mins',
-            arrivalTime: '8:35 pm',
-            cost: '$2.50',
-            co2: '120g',
-            co2Label: 'Save CO₂',
-            badge: { type: 'excellent', text: 'Excellent' },
-            tags: ['Accessible', 'Climate Friendly'],
-            envAlert: 'Lowest emissions option available.'
-        }
-    ];
-
-    const calculateArrivalTime = (minutes) => {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + minutes);
-        return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            setRoutes(transformedRoutes);
+          },
+          (error) => {
+            console.log('Geolocation error:', error);
+            setRoutes(getDefaultRoutes());
+          }
+        );
+      } catch (error) {
+        console.error('Failed to fetch routes:', error);
+        setRoutes(getDefaultRoutes());
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const calculateCost = (mode, minutes) => {
-        const baseCosts = { bus: 1.5, subway: 2.0, train: 2.0, mrt: 2.5 };
-        const cost = (baseCosts[mode] || 1.5) + (minutes / 60);
-        return `$${cost.toFixed(2)}`;
-    };
+    fetchRoutes();
+  }, [homeSearchQuery]);
 
-    const getBadgeForScore = (score) => {
-        if (score >= 95) return { type: 'excellent', text: 'Excellent' };
-        if (score >= 85) return { type: 'good', text: 'Good' };
-        if (score >= 70) return { type: 'moderate', text: 'Moderate' };
-        return { type: 'bad', text: 'Limited' };
-    };
+  // Helper functions
+  const getDefaultRoutes = () => [
+    {
+      id: 1,
+      type: 'bus',
+      recommended: true,
+      station: 'Meskel Square Station',
+      distance: '6.5 km',
+      duration: '25 mins',
+      arrivalTime: '8:50 pm',
+      cost: '$1.80',
+      co2: '320g',
+      co2Label: 'Save CO₂',
+      badge: { type: 'good', text: 'Good' },
+      tags: ['Accessible'],
+      envAlert: 'This route produces 38% less emissions than driving.'
+    },
+    {
+      id: 2,
+      type: 'bus',
+      recommended: false,
+      station: 'Addis Ketema Station',
+      distance: '5.0 km',
+      duration: '40 mins',
+      arrivalTime: '8:30 pm',
+      cost: '$1.50',
+      co2: '200g',
+      co2Label: 'Save CO₂',
+      badge: { type: 'moderate', text: 'Moderate' },
+      tags: ['Accessible'],
+      envAlert: 'Air quality is moderate on this route.'
+    },
+    {
+      id: 3,
+      type: 'train',
+      recommended: true,
+      station: 'Light Rail Station',
+      distance: '7.2 km',
+      duration: '18 mins',
+      arrivalTime: '8:25 pm',
+      cost: '$2.00',
+      co2: '150g',
+      co2Label: 'Save CO₂',
+      badge: { type: 'good', text: 'Good' },
+      tags: ['Accessible', 'Fast'],
+      envAlert: 'Clean electric transport option.'
+    },
+    {
+      id: 4,
+      type: 'mrt',
+      recommended: false,
+      station: 'Metro Line 1',
+      distance: '8.1 km',
+      duration: '22 mins',
+      arrivalTime: '8:35 pm',
+      cost: '$2.50',
+      co2: '120g',
+      co2Label: 'Save CO₂',
+      badge: { type: 'excellent', text: 'Excellent' },
+      tags: ['Accessible', 'Climate Friendly'],
+      envAlert: 'Lowest emissions option available.'
+    }
+  ];
 
-    const getRouteTags = (route) => {
-        const tags = [];
-        if (route.wheelchair_accessible) tags.push('Accessible');
-        if (route.has_elevator) tags.push('Elevator');
-        if (route.audio_assistance_available) tags.push('Audio Aid');
-        if (route.estimated_co2_kg && route.estimated_co2_kg < 0.2) tags.push('Climate Friendly');
-        return tags;
-    };
+  const calculateArrivalTime = (minutes) => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + minutes);
+    return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
 
-    const getEnvAlert = (route) => {
-        if (route.co2_saved_vs_car_kg > 5) {
-            return `This route saves ${route.co2_saved_vs_car_kg.toFixed(1)}kg CO₂ compared to driving!`;
-        } else if (route.carbon_intensity_gco2_per_kwh && route.carbon_intensity_gco2_per_kwh < 150) {
-            return 'Low carbon intensity - great time to travel!';
-        }
-        return 'Eco-friendly transit option.';
-    };
+  const calculateCost = (mode, minutes) => {
+    const baseCosts = { bus: 1.5, subway: 2.0, train: 2.0, mrt: 2.5 };
+    const cost = (baseCosts[mode] || 1.5) + (minutes / 60);
+    return `$${cost.toFixed(2)}`;
+  };
 
-    const filteredRoutes = routes.filter(r => r.type === activeTab);
-    const navigate = useNavigate();
+  const getBadgeForScore = (score) => {
+    if (score >= 95) return { type: 'excellent', text: 'Excellent' };
+    if (score >= 85) return { type: 'good', text: 'Good' };
+    if (score >= 70) return { type: 'moderate', text: 'Moderate' };
+    return { type: 'bad', text: 'Limited' };
+  };
+
+  const getRouteTags = (route) => {
+    const tags = [];
+    if (route.wheelchair_accessible) tags.push('Accessible');
+    if (route.has_elevator) tags.push('Elevator');
+    if (route.audio_assistance_available) tags.push('Audio Aid');
+    if (route.estimated_co2_kg && route.estimated_co2_kg < 0.2) tags.push('Climate Friendly');
+    return tags;
+  };
+
+  const getEnvAlert = (route) => {
+    if (route.co2_saved_vs_car_kg > 5) {
+      return `This route saves ${route.co2_saved_vs_car_kg.toFixed(1)}kg CO₂ compared to driving!`;
+    } else if (route.carbon_intensity_gco2_per_kwh && route.carbon_intensity_gco2_per_kwh < 150) {
+      return 'Low carbon intensity - great time to travel!';
+    }
+    return 'Eco-friendly transit option.';
+  };
+
+  const filteredRoutes = routes.filter(r => r.type === activeTab);
+  const navigate = useNavigate();
 
 
   return (
@@ -276,6 +280,11 @@ const Home = () => {
 
             {/* Right */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button className="icon-btn-ghost"
+                onClick={() => setShowDisabilityModal(true)}
+                title="Accessibility Options">
+                <EyeOff size={24} color="#343A40" />
+              </button>
               <button className="icon-btn-ghost"
                 onClick={() => navigate('/notifications')}>
                 <Bell size={24} color="#343A40" />
@@ -513,6 +522,12 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* Disability Verification Modal */}
+      <VerifyDisability
+        isOpen={showDisabilityModal}
+        onClose={() => setShowDisabilityModal(false)}
+      />
     </div>
   );
 };
