@@ -829,7 +829,6 @@ const SearchRoute = () => {
                                             onClick={() => {
                                                 try {
                                                     // Store selected station data for next components
-                                                    setSelectedStation(route);
                                                     localStorage.setItem('selectedRoute', JSON.stringify(route));
                                                     console.log('Selected route:', route);
 
